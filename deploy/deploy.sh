@@ -1,4 +1,4 @@
 #!/bin/bash
 
-ssh mediaCenter 'test -d ~/irblasterbackend || mkdir ~/irblasterbackend'
-rsync -avz --exclude='node_modules/' ./ mediaCenter:irblasterbackend
+ssh labPi 'test -d ~/PirBlasterBackend || mkdir ~/PirBlasterBackend'
+rsync -avz ./ labPi:PirBlasterBackend
