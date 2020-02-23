@@ -3,7 +3,7 @@
   "manufacturer": "Samsung",
   "protocol": "samsung",
   "header": "0xE0E0",
-  "keys": {
+  "keyCodes": {
 
   }
 }
