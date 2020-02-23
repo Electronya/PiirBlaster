@@ -7,12 +7,13 @@ class IrReader:
         self.gpioId = gpioId
         self.logger = logger
         self.pi = pigpio.pi()
-        self.recording = False
         self.onPulses = []
         self.offPulses = []
 
         self.t1 = None
         self.t2 = None
+
+        self.logger.info('Creating IR Reader on gpio %d', self.gpioId)
 
         self.pi.set_mode(self.gpioId, pigpio.INPUT)
 
