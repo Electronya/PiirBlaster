@@ -1,5 +1,5 @@
 {
-  "name": "samsung",
+  "name": "SAMSUNG",
   "startBit": {"onTime": 4500, "offTime": 4500},
   "zero": {"onTime": 560, "offTime": 560},
   "one": {"onTime": 560, "offTime": 1690},
@@ -7,5 +7,7 @@
   "gap": 47200,
   "headerSize": 16,
   "dataSize": 16,
-  "footerSize": 0
+  "footerSize": 0,
+  "firstBit": "LSB",
+  "sendLogicalInverse": false
 }

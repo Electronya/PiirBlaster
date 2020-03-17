@@ -7,5 +7,7 @@
   "gap": 40000,
   "headerSize": 16,
   "dataSize": 16,
-  "footerSize": 0
+  "footerSize": 0,
+  "firstBit": "LSB",
+  "sendLogicalInverse": true
 }
