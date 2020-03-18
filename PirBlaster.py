@@ -41,5 +41,11 @@ emitters = []
 for outConfig in hardwareConfig['out']:
     emitters.append(IrEmitter(outConfig, app.logger))
 
+# Creating devices
+devices = []
+for deviceConfig in devicesConfig:
+    emitterIter = filter(lambda emitter: emitter['name'] == deviceConfig['linkedEmitter'], hardwareConfig['out'])
+    devices.append(Device(deviceConfig, mqttConfig, next(emitterIter), app.logger))
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port =5000, debug=False, threaded=True)

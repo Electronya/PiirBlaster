@@ -1,7 +1,7 @@
 [
   {
     "name": "amp",
-    "location": "location",
+    "location": "livingRoom",
     "linkedEmitter": "OUT3",
     "remote": {
       "manufacturer": "sony",
@@ -9,8 +9,6 @@
     },
     "topicPrefix": "devices",
     "lastWill": {
-      "topic": "status",
-      "payload": "OFFLINE",
       "qos": 1,
       "retain": true
     }
