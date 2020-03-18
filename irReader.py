@@ -3,8 +3,8 @@ import pigpio
 
 class IrReader:
     # Constructor
-    def __init__(self, gpioId, logger):
-        self.gpioId = gpioId
+    def __init__(self, config, logger):
+        self.config = config
         self.logger = logger
         self.pi = pigpio.pi()
         self.onPulses = []
@@ -13,9 +13,9 @@ class IrReader:
         self.t1 = None
         self.t2 = None
 
-        self.logger.info('Creating IR Reader on gpio %d', self.gpioId)
+        self.logger.info('Creating IR Reader on gpio %d', self.config['gpioId'])
 
-        self.pi.set_mode(self.gpioId, pigpio.INPUT)
+        self.pi.set_mode(self.config['gpioId'], pigpio.INPUT)
 
     # Interrupt callback
     def _intCallback(self, gpio, level, tick):
@@ -33,7 +33,7 @@ class IrReader:
     # Start reading
     def _startReading(self):
         self.logger.debug('Starting to read IR codes')
-        self.readingCallback = self.pi.callback(self.gpioId, pigpio.EITHER_EDGE, self._intCallback)
+        self.readingCallback = self.pi.callback(self.config['gpioId'], pigpio.EITHER_EDGE, self._intCallback)
 
     # Stop reading
     def _stopReading(self):
@@ -55,6 +55,10 @@ class IrReader:
     # Averaging bit times
     def _averageBitTimes(self, bit, codeLength):
         self.logger.debug('Averaging bit times')
+
+    # Get name
+    def getName(self):
+        return self.config['name']
 
     # Start discovering protocol
     def discoverProtocol(self):

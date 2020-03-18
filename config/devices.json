@@ -1,0 +1,16 @@
+[
+  {
+    "name": "amp",
+    "location": "livingRoom",
+    "linkedEmitter": "OUT3",
+    "remote": {
+      "manufacturer": "sony",
+      "model": "rm-s103"
+    },
+    "topicPrefix": "devices",
+    "lastWill": {
+      "qos": 1,
+      "retain": true
+    }
+  }
+]
