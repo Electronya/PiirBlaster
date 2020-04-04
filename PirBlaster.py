@@ -47,5 +47,22 @@ for deviceConfig in devicesConfig:
     emitterIter = filter(lambda emitter: emitter['name'] == deviceConfig['linkedEmitter'], hardwareConfig['out'])
     devices.append(Device(deviceConfig, mqttConfig, next(emitterIter), app.logger))
 
+# For Hardware test
+# emitters[3].addBit(2400, 590)
+# emitters[3].addBit(1200, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(1200, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(1200, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(590, 590)
+# emitters[3].addBit(1200, 590)
+# emitters[3].addGap(10800)
+# emitters[3].sendCommand(0.5)
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port =5000, debug=False, threaded=True)

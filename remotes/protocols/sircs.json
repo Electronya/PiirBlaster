@@ -3,7 +3,7 @@
   "startBit": {"onTime": 2400, "offTime": 520},
   "zero": {"onTime": 520, "offTime": 520},
   "one": {"onTime": 1240, "offTime": 520},
-  "gap": 108233,
+  "gap": 10800,
   "headerSize": 0,
   "dataSize": 7,
   "footerSize": 5,
