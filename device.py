@@ -19,7 +19,7 @@ class Device(mqtt.Client):
         super().__init__(client_id=devConfig['location']+'.'+devConfig['name'])
         self.devConfig = devConfig
         self.logger = logger
-        self.logger.info('Creating device: %s.%s', devConfig['location'], devConfig['name'])
+        self.logger.info(f"Creating device: {devConfig['location']}.{devConfig['name']}")
 
         self.irEmitter = linkedEmitter
         self.baseTopic = self.devConfig['topicPrefix']+'/'+self.devConfig['location']+'/'+self.devConfig['name']+'/'
@@ -29,7 +29,7 @@ class Device(mqtt.Client):
 
     # Init the device remote
     def _initRemote(self, manufacturer, model):
-        self.logger.info('%s.%s: Initializing remote %s', self.devConfig['location'], self.devConfig['name'], model)
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Initializing remote {model}")
         self.remote = Remote(self.logger, manufacturer, model)
 
     # Init device mqtt client
@@ -42,10 +42,8 @@ class Device(mqtt.Client):
         self.tls_set()
         self.tls_insecure_set(True)
 
-        self.logger.info('%s.%s: Connecting to %s:%d', self.devConfig['location'], self.devConfig['name'],
-            broker['ip'], broker['port'])
-        self.logger.debug('%s.%s: Connecting as %s with password %s', self.devConfig['location'], self.devConfig['name'],
-            user['name'], user['password'])
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Connecting to {broker['ip']}:{broker['port']}")
+        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: Connecting as {user['name']} with password {user['password']}")
 
         # Connect to broker
         self.connect(broker['ip'], port=broker['port'])
@@ -57,18 +55,26 @@ class Device(mqtt.Client):
     def _publishCmdResult(self, success):
         resultTopic = self.baseTopic + self.RESULT_TOPIC
         if success:
+            self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Command supported")
             self.publish(resultTopic, payload=self.SUCCESS_MSG)
         else:
+            self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Command unsupported")
             self.publish(resultTopic, payload=self.ERROR_MSG)
 
     # Process command
     def _processCommad(self, command):
-        isSupported = self.remote.getKeyCode(command)
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Processing command {command}")
+        cmdBitTimings = self.remote.generateCmd(command)
+        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: Command bit timings\n{cmdBitTimings}")
+        if cmdBitTimings is None:
+            self._publishCmdResult(False)
+        else:
+            self._publishCmdResult(True)
 
     # On connection
     def on_connect(self, client, usrData, flags, rc):
-        self.logger.info('%s.%s: Connected', self.devConfig['location'], self.devConfig['name'])
-        self.logger.debug('%s.%s: rc %s', self.devConfig['location'], self.devConfig['name'], str(rc))
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Connected")
+        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: rc {rc}")
 
         # Publish ONLINE status
         statusTopic = self.baseTopic + self.STATUS_TOPIC
@@ -81,23 +87,24 @@ class Device(mqtt.Client):
 
     # On disconnect
     def on_disconnect(self, client, usrData, rc):
-        self.logger.info('%s.%s: Disconnected', self.devConfig['location'], self.devConfig['name'])
-        self.logger.debug('%s.%s: rc %s', self.devConfig['location'], self.devConfig['name'], str(rc))
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Disconnected")
+        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: rc {rc}")
 
     # On message
     def on_message(self, client, usrData, msg):
         receivedMsg = msg.payload.decode('utf-8')
-        self.logger.info('%s.%s: Message recieved "%s"', self.devConfig['location'], self.devConfig['name'], receivedMsg)
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Message recieved {receivedMsg}")
+        self._processCommad(receivedMsg)
 
     # On publish
     def on_publish(self, client, usrData, mid):
-        self.logger.info('%s.%s: Message published', self.devConfig['location'], self.devConfig['name'])
-        self.logger.debug('%s.%s: mid %s', self.devConfig['location'], self.devConfig['name'], str(mid))
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Message published")
+        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: mid {mid}")
 
     # On subscribe
     def on_subscribe(self, client, usrData, mid, grantedQoS):
-        self.logger.info('%s.%s: Subscibed with QoS %s', self.devConfig['location'], self.devConfig['name'], str(grantedQoS))
-        self.logger.debug('%s.%s: mid %s', self.devConfig['location'], self.devConfig['name'], str(mid))
+        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Subscibed with QoS {grantedQoS}")
+        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: mid {mid}")
 
     # On log
     def on_log(self, client, usrData, logLevel, logMsg):
@@ -108,7 +115,7 @@ class Device(mqtt.Client):
             'MQTT_LOG_ERR': self.logger.error,
             'MQTT_LOG_DEBUG': self.logger.debug,
         }
-        switcher[logLevel]('%s.%s: %s', self.devConfig['location'], self.devConfig['name'], logMsg)
+        switcher[logLevel](f"{self.devConfig['location']}.{self.devConfig['name']}: {logMsg}")
 
     # Link IR emitter
     def linkIrEmitter(self, irEmitter):
