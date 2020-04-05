@@ -70,6 +70,10 @@ class Device(mqtt.Client):
             self._publishCmdResult(False)
         else:
             self._publishCmdResult(True)
+            for bitTiming in cmdBitTimings:
+                self.irEmitter.addBit(bitTiming['onTime'], bitTiming['offTime'])
+            self.irEmitter.addGap(self.remote.getCmdGap())
+            self.irEmitter.sendCommand(0.5)
 
     # On connection
     def on_connect(self, client, usrData, flags, rc):
