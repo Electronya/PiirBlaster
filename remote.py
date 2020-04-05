@@ -293,17 +293,21 @@ class Remote:
         command = []
         startBit = self.protocol.getStartBit()
         if startBit is not None:
-            command += startBit
+            command.append(startBit)
+            self.logger.debug(f"remotes.{self.descriptor['model']}: Adding start bit->\n{command}")
         header = self.getHeader()
         if header is not None:
             command += self._generateBitTimingList(header)
+            self.logger.debug(f"remotes.{self.descriptor['model']}: Adding header->\n{command}")
         data = self.getKeyCode(key)
         if data is None:
             return None
         command += self._generateBitTimingList(data)
+        self.logger.debug(f"remotes.{self.descriptor['model']}: Adding data->\n{command}")
         footer = self.getFooter()
         if footer is not None:
             command += self._generateBitTimingList(footer)
+            self.logger.debug(f"remotes.{self.descriptor['model']}: Adding footer->\n{command}")
         return command
 
     # Save remote
