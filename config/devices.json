@@ -3,9 +3,12 @@
     "name": "amp",
     "location": "livingRoom",
     "linkedEmitter": "OUT3",
-    "remote": {
+    "commandSet": {
+      "model": "rm-s103",
       "manufacturer": "sony",
-      "model": "rm-s103"
+      "emitterGpio": 22,
+      "receiverGpio": 11,
+      "packetGap": 0.01
     },
     "topicPrefix": "devices",
     "lastWill": {

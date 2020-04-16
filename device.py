@@ -1,7 +1,8 @@
 import paho.mqtt.client as mqtt
+import os
+import json
 
-from irEmitter import IrEmitter
-from remote import Remote
+from ircodec.command import CommandSet
 
 class Device(mqtt.Client):
     # Constants
@@ -11,26 +12,27 @@ class Device(mqtt.Client):
 
     ONLINE_MSG = 'ONLINE'
     OFFLINE_MSG = 'OFFLINE'
-    SUCCESS_MSG = 'success'
+    SUCCESS_MSG = 'done'
     ERROR_MSG = 'unsupported'
 
     # Constructor
-    def __init__(self, devConfig, mqttConfig, linkedEmitter, logger):
+    def __init__(self, logger, mqttConfig, devConfig, isNew=False):
         super().__init__(client_id=devConfig['location']+'.'+devConfig['name'])
-        self.devConfig = devConfig
+        self.config = devConfig
         self.logger = logger
-        self.logger.info(f"Creating device: {devConfig['location']}.{devConfig['name']}")
 
-        self.irEmitter = linkedEmitter
-        self.baseTopic = self.devConfig['topicPrefix']+'/'+self.devConfig['location']+'/'+self.devConfig['name']+'/'
+        if isNew:
+            self.logger.info(f"{self.config['location']}.{self.config['name']}: Creating new device")
+            self.commandSet = CommandSet(emitter_gpio=self.config['commandSet']['emitterGpio'],
+                receiver_gpio=self.config['commandSet']['receiverGpio'],
+                description=self.config['description'])
+        else:
+            self.logger.info(f"{self.config['location']}.{self.config['name']}: Loading existing device")
+            self.commandSet = CommandSet.load(os.path.join('./commandSets',
+                self.config['commandSet']['manufacturer'], self.config['commandSet']['model'] + '.json'))
 
-        self._initRemote(self.devConfig['remote']['manufacturer'], self.devConfig['remote']['model'])
-        self._initMqttClient(mqttConfig['user'], mqttConfig['broker'], self.devConfig['lastWill'])
-
-    # Init the device remote
-    def _initRemote(self, manufacturer, model):
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Initializing remote {model}")
-        self.remote = Remote(self.logger, manufacturer, model)
+        self.baseTopic = self.config['topicPrefix']+'/'+self.config['location']+'/'+self.config['name']+'/'
+        self._initMqttClient(mqttConfig['user'], mqttConfig['broker'], self.config['lastWill'])
 
     # Init device mqtt client
     def _initMqttClient(self, user, broker, lastWill):
@@ -42,8 +44,8 @@ class Device(mqtt.Client):
         self.tls_set()
         self.tls_insecure_set(True)
 
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Connecting to {broker['ip']}:{broker['port']}")
-        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: Connecting as {user['name']} with password {user['password']}")
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Connecting to {broker['ip']}:{broker['port']}")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Connecting as {user['name']} with password {user['password']}")
 
         # Connect to broker
         self.connect(broker['ip'], port=broker['port'])
@@ -55,30 +57,16 @@ class Device(mqtt.Client):
     def _publishCmdResult(self, success):
         resultTopic = self.baseTopic + self.RESULT_TOPIC
         if success:
-            self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Command supported")
+            self.logger.info(f"{self.config['location']}.{self.config['name']}: Command sent")
             self.publish(resultTopic, payload=self.SUCCESS_MSG)
         else:
-            self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Command unsupported")
+            self.logger.info(f"{self.config['location']}.{self.config['name']}: Command unsupported")
             self.publish(resultTopic, payload=self.ERROR_MSG)
-
-    # Process command
-    def _processCommad(self, command):
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Processing command {command}")
-        cmdBitTimings = self.remote.generateCmd(command)
-        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: Command bit timings\n{cmdBitTimings}")
-        if cmdBitTimings is None:
-            self._publishCmdResult(False)
-        else:
-            self._publishCmdResult(True)
-            for bitTiming in cmdBitTimings:
-                self.irEmitter.addBit(bitTiming['onTime'], bitTiming['offTime'])
-            self.irEmitter.addGap(self.remote.getCmdGap())
-            self.irEmitter.sendCommand(0.5)
 
     # On connection
     def on_connect(self, client, usrData, flags, rc):
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Connected")
-        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: rc {rc}")
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Connected")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: rc {rc}")
 
         # Publish ONLINE status
         statusTopic = self.baseTopic + self.STATUS_TOPIC
@@ -88,39 +76,86 @@ class Device(mqtt.Client):
         cmdTopic = self.baseTopic + self.CMD_TOPIC
         self.subscribe(cmdTopic)
 
-
     # On disconnect
     def on_disconnect(self, client, usrData, rc):
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Disconnected")
-        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: rc {rc}")
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Disconnected")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: rc {rc}")
 
     # On message
     def on_message(self, client, usrData, msg):
         receivedMsg = msg.payload.decode('utf-8')
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Message recieved {receivedMsg}")
-        self._processCommad(receivedMsg)
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Message recieved {receivedMsg}")
+        if self.commandSet is not None:
+            for i in range(0,4):
+                self.logger.debug(f"{self.config['location']}.{self.config['name']}: Sending packet #{i}")
+                self.commandSet.emit(receivedMsg, emit_gap=self.config['commandSet']['packetGap'])
+            self._publishCmdResult(True)
+        else:
+            self._publishCmdResult(False)
 
     # On publish
     def on_publish(self, client, usrData, mid):
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Message published")
-        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: mid {mid}")
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Message published")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: mid {mid}")
 
     # On subscribe
     def on_subscribe(self, client, usrData, mid, grantedQoS):
-        self.logger.info(f"{self.devConfig['location']}.{self.devConfig['name']}: Subscibed with QoS {grantedQoS}")
-        self.logger.debug(f"{self.devConfig['location']}.{self.devConfig['name']}: mid {mid}")
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Subscibed with QoS {grantedQoS}")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: mid {mid}")
 
     # On log
     def on_log(self, client, usrData, logLevel, logMsg):
         switcher = {
-            'MQTT_LOG_INFO': self.logger.info,
-            'MQTT_LOG_NOTICE': self.logger.info,
-            'MQTT_LOG_WARNING': self.logger.warning,
-            'MQTT_LOG_ERR': self.logger.error,
-            'MQTT_LOG_DEBUG': self.logger.debug,
+            mqtt.MQTT_LOG_INFO: self.logger.info,
+            mqtt.MQTT_LOG_NOTICE: self.logger.info,
+            mqtt.MQTT_LOG_WARNING: self.logger.warning,
+            mqtt.MQTT_LOG_ERR: self.logger.error,
+            mqtt.MQTT_LOG_DEBUG: self.logger.debug,
         }
-        switcher[logLevel](f"{self.devConfig['location']}.{self.devConfig['name']}: {logMsg}")
+        switcher[logLevel](f"{self.config['location']}.{self.config['name']}: {logMsg}")
 
-    # Link IR emitter
-    def linkIrEmitter(self, irEmitter):
-        self.irEmitter = irEmitter
+    # Set device config
+    def setConfig(self, config):
+        self.logger(f"{self.config['location']}.{self.config['name']}: Setting device config to {config}")
+        self.config = config
+
+    # Get device config
+    def getConfig(self):
+        self.logger(f"{self.config['location']}.{self.config['name']}: Getting device config")
+        return self.config
+
+    # Get command list
+    def getCommandList(self):
+        if self.commandSet is not None:
+            self.logger(f"{self.config['location']}.{self.config['name']}: Getting command list")
+            return self.commandSet.to_json()
+
+    # Add a command
+    def addCommand(self, command, description):
+        if self.commandSet is not None:
+            self.logger(f"{self.config['location']}.{self.config['name']}: Adding command {command} to command set")
+            self.commandSet.add(command, description=description)
+
+    # Delete a command
+    def deleteCommand(self, command):
+        if self.commandSet is not None:
+            self.logger(f"{self.config['location']}.{self.config['name']}: Deleting command {command} from command set")
+            self.commandSet.remove(command)
+
+    # Save device
+    def save(self):
+        # Save the command set
+        if self.commandSet is not None:
+            self.commandSet.save_as(os.path.join('./commandSets', self.config['commandSet'], '.json'))
+
+        # Save the device configuration
+        with open('./config/devices.json') as configFile:
+            deviceConfigs = json.loads(configFile.read())
+            devConfigItr = filter(lambda device: device['name'] == self.config['name'], deviceConfigs)
+            deviceConfig = next(devConfigItr, None)
+            if deviceConfig is not None:
+                deviceConfig = self.config
+            else:
+                deviceConfigs.append(self.config)
+            devConfigsContent = json.dumps(deviceConfigs, sort_keys=True, indent=2)
+            configFile.write(devConfigsContent)
