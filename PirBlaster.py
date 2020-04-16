@@ -7,9 +7,6 @@ import logging
 import json
 import os
 
-from irReader import IrReader
-from irEmitter import IrEmitter
-from remote import Protocol, Remote
 from device import Device
 
 # Setting up app
@@ -19,13 +16,8 @@ socketio = SocketIO(app)
 app.logger.info('App setup done')
 
 # Loading configs
-hardwareConfig = None
 mqttConfig = None
 devicesConfig = None
-
-hardwareConfigFile = os.path.join('./', 'config', 'hardware.json')
-with open(hardwareConfigFile) as configFile:
-    hardwareConfig = json.loads(configFile.read())
 
 mqttConfigFile = os.path.join('./', 'config', 'mqtt.json')
 with open(mqttConfigFile) as configFile:
@@ -35,34 +27,50 @@ devicesConfigFile = os.path.join('./', 'config', 'devices.json')
 with open(devicesConfigFile) as configFile:
     devicesConfig = json.loads(configFile.read())
 
-# Instanciating hardware classes
-reader = IrReader(hardwareConfig['in'], app.logger)
-emitters = []
-for outConfig in hardwareConfig['out']:
-    emitters.append(IrEmitter(outConfig, app.logger))
-
 # Creating devices
 devices = []
 for deviceConfig in devicesConfig:
-    emitterIter = filter(lambda emitter: emitter['name'] == deviceConfig['linkedEmitter'], hardwareConfig['out'])
-    devices.append(Device(deviceConfig, mqttConfig, next(emitterIter), app.logger))
+    devices.append(Device(app.logger, mqttConfig, deviceConfig))
 
 # For Hardware test
-# emitters[3].addBit(2400, 590)
-# emitters[3].addBit(1200, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(1200, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(1200, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(590, 590)
-# emitters[3].addBit(1200, 590)
-# emitters[3].addGap(10800)
-# emitters[3].sendCommand(0.5)
+# from ircodec.command import CommandSet
+# controller = CommandSet('test', emitter_gpio=22, receiver_gpio=11, description='Test')
+# controller.add('power')
+# controller = CommandSet.load('test.json')
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.emit('power', emit_gap=0.01)
+# controller.save_as('test.json')
+
+from irEmitter import IrEmitter
+# emitter = IrEmitter({"name": "OUT3", "gpioId": 22}, app.logger)
+# emitter.addBit(2400, 590)
+# emitter.addBit(1200, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(1200, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(1200, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(590, 590)
+# emitter.addBit(1200, 590)
+# emitter.addGap(10800)
+# emitter.sendCommand(0.5)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port =5000, debug=False, threaded=True)
