@@ -54,23 +54,5 @@ for deviceConfig in devicesConfig:
 # controller.emit('power', emit_gap=0.01)
 # controller.save_as('test.json')
 
-from irEmitter import IrEmitter
-# emitter = IrEmitter({"name": "OUT3", "gpioId": 22}, app.logger)
-# emitter.addBit(2400, 590)
-# emitter.addBit(1200, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(1200, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(1200, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(590, 590)
-# emitter.addBit(1200, 590)
-# emitter.addGap(10800)
-# emitter.sendCommand(0.5)
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port =5000, debug=False, threaded=True)
