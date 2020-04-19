@@ -85,13 +85,11 @@ class Device(mqtt.Client):
     def on_message(self, client, usrData, msg):
         receivedMsg = msg.payload.decode('utf-8')
         self.logger.info(f"{self.config['location']}.{self.config['name']}: Message recieved {receivedMsg}")
-        if self.commandSet is not None:
-            for i in range(0,4):
-                self.logger.debug(f"{self.config['location']}.{self.config['name']}: Sending packet #{i}")
-                self.commandSet.emit(receivedMsg, emit_gap=self.config['commandSet']['packetGap'])
-            self._publishCmdResult(True)
-        else:
-            self._publishCmdResult(False)
+        for i in range(0,4):
+            self.logger.debug(f"{self.config['location']}.{self.config['name']}: Sending packet #{i}")
+            # TODO: Manage unsupported command
+            self.commandSet.emit(receivedMsg, emit_gap=self.config['commandSet']['packetGap'])
+        self._publishCmdResult(True)
 
     # On publish
     def on_publish(self, client, usrData, mid):
@@ -126,36 +124,44 @@ class Device(mqtt.Client):
 
     # Get command list
     def getCommandList(self):
-        if self.commandSet is not None:
-            self.logger(f"{self.config['location']}.{self.config['name']}: Getting command list")
-            return self.commandSet.to_json()
+        self.logger(f"{self.config['location']}.{self.config['name']}: Getting command list")
+        return self.commandSet.to_json()
 
     # Add a command
     def addCommand(self, command, description):
-        if self.commandSet is not None:
-            self.logger(f"{self.config['location']}.{self.config['name']}: Adding command {command} to command set")
-            self.commandSet.add(command, description=description)
+        self.logger(f"{self.config['location']}.{self.config['name']}: Adding command {command} to command set")
+        self.commandSet.add(command, description=description)
 
     # Delete a command
     def deleteCommand(self, command):
-        if self.commandSet is not None:
-            self.logger(f"{self.config['location']}.{self.config['name']}: Deleting command {command} from command set")
-            self.commandSet.remove(command)
+        self.logger(f"{self.config['location']}.{self.config['name']}: Deleting command {command} from command set")
+        self.commandSet.remove(command)
 
-    # Save device
-    def save(self):
-        # Save the command set
-        if self.commandSet is not None:
-            self.commandSet.save_as(os.path.join('./commandSets', self.config['commandSet'], '.json'))
+    # Save device Config
+    def saveConfig(self):
+        result = {'result': 'fail'}
+        try:
+            with open('./config/devices.json') as configFile:
+                deviceConfigs = json.loads(configFile.read())
+                devConfigItr = filter(lambda device: device['name'] == self.config['name'], deviceConfigs)
+                deviceConfig = next(devConfigItr, None)
+                if deviceConfig is not None:
+                    deviceConfig = self.config
+                else:
+                    deviceConfigs.append(self.config)
+                devConfigsContent = json.dumps(deviceConfigs, sort_keys=True, indent=2)
+                configFile.write(devConfigsContent)
+            result['result'] = 'success'
+        except EnvironmentError:
+            result['message'] = 'Error accessing devices configuration file!!'
+        return result
 
-        # Save the device configuration
-        with open('./config/devices.json') as configFile:
-            deviceConfigs = json.loads(configFile.read())
-            devConfigItr = filter(lambda device: device['name'] == self.config['name'], deviceConfigs)
-            deviceConfig = next(devConfigItr, None)
-            if deviceConfig is not None:
-                deviceConfig = self.config
-            else:
-                deviceConfigs.append(self.config)
-            devConfigsContent = json.dumps(deviceConfigs, sort_keys=True, indent=2)
-            configFile.write(devConfigsContent)
+    # Save device command set
+    def saveCommandSet(self):
+        result = {'result': 'fail'}
+        try:
+            self.commandSet.save_as(os.path.join('./commandSets', self.config['commandSet'] + '.json'))
+            result['result'] = 'success'
+        except EnvironmentError:
+            result['message'] = 'Error accessing command set file'
+        return result
