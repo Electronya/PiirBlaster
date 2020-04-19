@@ -25,7 +25,7 @@ class Device(mqtt.Client):
             self.logger.info(f"{self.config['location']}.{self.config['name']}: Creating new device")
             self.commandSet = CommandSet(emitter_gpio=self.config['commandSet']['emitterGpio'],
                 receiver_gpio=self.config['commandSet']['receiverGpio'],
-                description=self.config['description'])
+                description=self.config['commandSet']['description'])
         else:
             self.logger.info(f"{self.config['location']}.{self.config['name']}: Loading existing device")
             self.commandSet = CommandSet.load(os.path.join('./commandSets',

@@ -12,8 +12,6 @@ from device import Device
 # Setting up app
 app = Flask(__name__)
 logging.basicConfig(level=logging.DEBUG)
-# For dev only
-cors = CORS(app, resources={r"/*": {"origins": "*"}})
 socketio = SocketIO(app, cors_allowed_origins="*")
 app.logger.info('App setup done')
 
@@ -40,43 +38,43 @@ for deviceConfig in devicesConfig:
 @socketio.on('connect')
 def onConnect():
     app.logger.info(f"websocket.api: New client connected {request.remote_addr}")
-    emit('apiStatus', {'message': 'connected'})
+    emit('apiStatus', {'result': 'success', 'message': 'connected'})
 
 @socketio.on('disconnect')
 def onDisconnet():
     app.logger.info(f"websocket.api: Client {request.remote_addr} disconnected")
 
-@socketio.on('getMqttConfig')
-def onGetMqttConfig(payload):
-    app.logger.info(f"websocket.api: Received getMqttConfig message from {request.remote_addr}")
-    app.logger.debug(payload)
-    emit('mqttConfig', mqttConfig)
-
 @socketio.on('getManufacturersList')
 def onGetManufsList(payload):
     app.logger.info(f"websocket.api: Received getManufacturersList message from {request.remote_addr}")
     app.logger.debug(payload)
-    emit('manufacturersList', {'manufacturers': listManufacturers()})
+    emit('manufacturersList', {'result': 'success', 'manufacturers': listManufacturers()})
 
 @socketio.on('getCommandSetsList')
 def onGetCmdSetsList(payload):
     app.logger.info(f"websocket.api: Received getCommandSetsList message from {request.remote_addr}")
     app.logger.debug(payload)
-    emit('commandSets', {'commandSets': listCommandSets(payload['manufacturer'])})
+    emit('commandSets', {'result': 'success', 'commandSets': listCommandSets(payload['manufacturer'])})
 
 @socketio.on('getDevicesList')
 def onGetDevicesList(payload):
     app.logger.info(f"websocket.api: Received getDevicesList message from {request.remote_addr}")
     app.logger.debug(payload)
-    emit('devicesList', devicesConfig)
+    emit('devicesList', {'result': 'success', 'devices': devicesConfig})
 
 @socketio.on('addDevice')
 def onAddDevice(payload):
+    result = {'result': 'fail'}
     app.logger.info(f"websocket.api: Received addDevice message from {request.remote_addr}")
     app.logger.debug(payload['newDevConfig'])
-    devicesConfig.append(payload['newDevConfig'])
-    devices.append(Device(app.logger, mqttConfig, payload['newDevConfig'], isNew=True))
-    emit('deviceAdded', {'result': 'success', 'newDevice': devicesConfig[-1]})
+    if filterDevice(payload['newDevConfig']) is None:
+        devicesConfig.append(payload['newDevConfig'])
+        devices.append(Device(app.logger, mqttConfig, payload['newDevConfig'], isNew=True))
+        result['newDevice'] = devicesConfig[-1]
+    else:
+        result['message'] = f"Device {payload['newDevConfig']['location']}.{payload['newDevConfig']['name']} already exists!!"
+    emit('deviceAdded', result)
+
 
 @socketio.on('updateDevice')
 def onUpdateDevice(payload):
