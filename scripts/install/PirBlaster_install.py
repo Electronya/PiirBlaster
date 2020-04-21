@@ -11,7 +11,7 @@ class Text:
 
 # Commands class
 class Command:
-    CLONE_PIRBLASTER = 'git clone git@github.com:Electronya/PirBlasterBackend.git'
+    CLONE_PIRBLASTER = 'git clone git@github.com:Electronya/PirBlaster.git'
     CREATE_PIRBLASTER_SVC = 'sudo cp ./scripts/services/pirblaster.service /etc/systemd/system'
     ENABLE_PIRBLASTER_SVC = 'sudo systemctl enable pirblaster.service'
     START_PIRBLASTER_SVC = 'sudo systemctl start pirblaster.service'
