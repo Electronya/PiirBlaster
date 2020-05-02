@@ -128,13 +128,13 @@ def clonePirBlaster():
     if cmdResult != 0:
         print(f"{Text.FAIL}CLONING PIRBLASTER FAILED!!!{Text.ENDC}")
         return False
-    os.chdir('./PirBlaster')
     print(f"{Text.SUCCESS}CLONING PIRBLASTER DONE{Text.ENDC}")
     return True
 
 # Creating virtual environment
 def createVirtualEnv():
     print(f"{Text.HEADER}*** CREATING VIRTUAL ENVIRONMENT ***{Text.ENDC}")
+    os.chdir('./PirBlaster')
     cmdResult = execCommand(Command.CREATE_VRITUAL_ENV)
     if cmdResult != 0:
         print(f"{Text.FAIL}CREATING VIRTUAL ENVIRONEMENT FAILED!!!{Text.ENDC}")
@@ -160,6 +160,7 @@ def deactivateVirtualEnv():
         print(f"{Text.FAIL}DEACTIVATING VIRTUAL ENVIRONMENT FAILED!!!{Text.ENDC}")
         return False
     print(f"{Text.SUCCESS}DEACTIVATING VIRTUAL ENVIRONMENT DONE{Text.ENDC}")
+    os.chdir('..')
     return True
 
 # Install dependencies
