@@ -1,0 +1,20 @@
+[
+  {
+    "name": "amp",
+    "location": "livingRoom",
+    "linkedEmitter": "OUT3",
+    "commandSet": {
+      "model": "rm-s103",
+      "manufacturer": "sony",
+      "description": "Receiver Remote",
+      "emitterGpio": 22,
+      "receiverGpio": 11,
+      "packetGap": 0.01
+    },
+    "topicPrefix": "devices",
+    "lastWill": {
+      "qos": 1,
+      "retain": true
+    }
+  }
+]
