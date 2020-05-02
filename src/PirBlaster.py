@@ -19,11 +19,11 @@ app.logger.info('App setup done')
 mqttConfig = None
 devicesConfig = None
 
-mqttConfigFile = os.path.join('./', 'config', 'mqtt.json')
+mqttConfigFile = os.path.join('./', 'config', 'service', 'mqtt.json')
 with open(mqttConfigFile) as configFile:
     mqttConfig = json.loads(configFile.read())
 
-devicesConfigFile = os.path.join('./', 'config', 'devices.json')
+devicesConfigFile = os.path.join('./', 'config', 'service', 'devices.json')
 with open(devicesConfigFile) as configFile:
     devicesConfig = json.loads(configFile.read())
 
