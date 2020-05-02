@@ -12,18 +12,16 @@ class Text:
 # Commands class
 class Command:
     CLONE_PIRBLASTER = 'git clone git@github.com:Electronya/PirBlaster.git'
-    CREATE_PIRBLASTER_SVC = 'sudo cp ./scripts/services/pirblaster.service /etc/systemd/system'
+    CREATE_PIRBLASTER_SVC = 'sudo cp ./PirBlaster/scripts/services/pirblaster.service /etc/systemd/system'
     ENABLE_PIRBLASTER_SVC = 'sudo systemctl enable pirblaster.service'
     START_PIRBLASTER_SVC = 'sudo systemctl start pirblaster.service'
     CREATE_VRITUAL_ENV = 'python3 -m venv venv'
-    ACTIVATE_VIRTUAL_ENV = 'source venv/bin/activate'
-    DEACTIVATE_VIRTUAL_ENV = 'deactivate'
-    INSTALL_DEPENDENCIES = 'pip install -r requirements.txt'
+    INSTALL_DEPENDENCIES = 'venv/bin/pip install -r requirements.txt'
     DWNLD_PIGPIO = 'wget https://github.com/joan2937/pigpio/archive/master.zip'
     UNZIP_PIGPIO = 'unzip master.zip'
     BUILD_PIGPIO = 'make'
     INSTALL_PIGPIO = 'sudo make install'
-    CREATE_PIGPIO_SVC = 'sudo cp ./scripts/services/pigpiod.service /etc/systemd/system'
+    CREATE_PIGPIO_SVC = 'sudo cp ./PirBlaster/scripts/services/pigpiod.service /etc/systemd/system'
     ENABLE_PIGPIO_SVC = 'sudo systemctl enable pigpiod.service'
     START_PIGPIO_SVC = 'sudo systemctl start pigpiod.service'
 
@@ -134,7 +132,7 @@ def clonePirBlaster():
 # Creating virtual environment
 def createVirtualEnv():
     print(f"{Text.HEADER}*** CREATING VIRTUAL ENVIRONMENT ***{Text.ENDC}")
-    os.chdir('./PirBlaster')
+    os.chdir('PirBlaster')
     cmdResult = execCommand(Command.CREATE_VRITUAL_ENV)
     if cmdResult != 0:
         print(f"{Text.FAIL}CREATING VIRTUAL ENVIRONEMENT FAILED!!!{Text.ENDC}")
@@ -142,26 +140,7 @@ def createVirtualEnv():
     print(f"{Text.SUCCESS}CREATING VIRTUAL ENVIRONMENT DONE{Text.ENDC}")
     return True
 
-# Activate virtual environment
-def activateVirutalEnv():
-    print(f"{Text.HEADER}*** AVITVATING VIRTUAL ENVIRONMENT ***{Text.ENDC}")
-    cmdResult = execCommand(Command.ACTIVATE_VIRTUAL_ENV)
-    if cmdResult != 0:
-        print(f"{Text.FAIL}ACTIVATING VIRTUAL ENVIRONMENT FAILED!!!{Text.ENDC}")
-        return False
-    print(f"{Text.SUCCESS}ACTIVATING VIRTUAL ENVIRONMENT DONE{Text.ENDC}")
-    return True
-
-# Deactivate virtual environment
-def deactivateVirtualEnv():
-    print(f"{Text.HEADER}*** DEACTIVATING VIRTUAL ENVIRONMENT ***{Text.ENDC}")
-    cmdResult = execCommand(Command.DEACTIVATE_VIRTUAL_ENV)
-    if cmdResult != 0:
-        print(f"{Text.FAIL}DEACTIVATING VIRTUAL ENVIRONMENT FAILED!!!{Text.ENDC}")
-        return False
-    print(f"{Text.SUCCESS}DEACTIVATING VIRTUAL ENVIRONMENT DONE{Text.ENDC}")
-    os.chdir('..')
-    return True
+# TODO: Install python3-venv (sudo apt install python3-venv)
 
 # Install dependencies
 def installDependencies():
@@ -171,6 +150,7 @@ def installDependencies():
         print(f"{Text.FAIL}INSTALLING PIRBLASTER DEPENDENCIES FAILED!!!{Text.ENDC}")
         return False
     print(f"{Text.SUCCESS}INSTALLING PIRBLASTER DEPENDENCIES DONE{Text.ENDC}")
+    os.chdir('..')
     return True
 
 # Create PirBlaster service
@@ -208,14 +188,12 @@ def setupPirBlasterSvc():
     # TODO: Check if sevice is already installed
     print(f"{Text.HEADER}*** SETTING UP PIRBLASTER SERVICE ***{Text.ENDC}")
     if createVirtualEnv():
-        if activateVirutalEnv():
-            if installDependencies():
-                if deactivateVirtualEnv():
-                    if createPirBlasterSvc():
-                        if enablePirBlasterSvc():
-                            if startPirBlasterSvc():
-                                print(f"{Text.SUCCESS}SETTING UP PIRBLASTER SERVICE DONE{Text.ENDC}")
-                                return True
+        if installDependencies():
+            if createPirBlasterSvc():
+                if enablePirBlasterSvc():
+                    if startPirBlasterSvc():
+                        print(f"{Text.SUCCESS}SETTING UP PIRBLASTER SERVICE DONE{Text.ENDC}")
+                        return True
     print(f"{Text.FAIL}SETTING UP PIRBLASTER SERVICE FAILED!!!{Text.ENDC}")
     return False
 
