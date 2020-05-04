@@ -6,8 +6,10 @@ from flask_cors import CORS
 import logging
 import json
 import os
+import signal
 
 from device import Device
+from serviceAdvertiser import ServiceAdvertiser
 
 # Setting up app
 app = Flask(__name__)
@@ -31,6 +33,12 @@ with open(devicesConfigFile) as configFile:
 devices = []
 for deviceConfig in devicesConfig:
     devices.append(Device(app.logger, mqttConfig, deviceConfig))
+
+# Creating the service advertiser
+svcAdvertiser = ServiceAdvertiser(app.logger)
+signal.signal(signal.SIGINT, svcAdvertiser.stopAdvertising)
+signal.signal(signal.SIGTERM, svcAdvertiser.stopAdvertising)
+# signal.signal(signal.SIGKILL, svcAdvertiser.stopAdvertising)
 
 #
 # Websocket API
