@@ -29,6 +29,14 @@ devicesConfigFile = os.path.join('./', 'config', 'service', 'devices.json')
 with open(devicesConfigFile) as configFile:
     devicesConfig = json.loads(configFile.read())
 
+# Waiting for the broker to be available
+app.logger.info(f"Checking if broker is reachable")
+brokerIsAvailable = False
+while not brokerIsAvailable:
+    brokerIsAvailable = True if os.system(f"ping -c 1 {mqttConfig['broker']['ip']}") is 0 else False
+    if not brokerIsAvailable:
+        app.logger.warning(f"Broker not reachable yet")
+
 # Creating devices
 devices = []
 for deviceConfig in devicesConfig:
