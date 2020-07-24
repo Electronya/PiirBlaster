@@ -44,9 +44,15 @@ for deviceConfig in devicesConfig:
 
 # Creating the service advertiser
 svcAdvertiser = ServiceAdvertiser(app.logger)
-signal.signal(signal.SIGINT, svcAdvertiser.stopAdvertising)
-signal.signal(signal.SIGTERM, svcAdvertiser.stopAdvertising)
-# signal.signal(signal.SIGKILL, svcAdvertiser.stopAdvertising)
+svcAdvertiser.startAdvertising()
+
+def signalHandler(signum, frame):
+    app.logger.info(f"PirBlaster: Signal handler called with signal {signum}")
+    svcAdvertiser.stopAdvertising()
+    exit()
+
+signal.signal(signal.SIGINT, signalHandler)
+signal.signal(signal.SIGTERM, signalHandler)
 
 #
 # Websocket API
@@ -159,27 +165,6 @@ def listCommandSets(manufacturer):
             commandSets.append(commandSet[:-5])
     return commandSets
 
-# For Hardware test
-# from ircodec.command import CommandSet
-# controller = CommandSet('test', emitter_gpio=22, receiver_gpio=11, description='Test')
-# controller.add('power')
-# controller = CommandSet.load('test.json')
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.emit('power', emit_gap=0.01)
-# controller.save_as('test.json')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port =5000, debug=False, threaded=True)
