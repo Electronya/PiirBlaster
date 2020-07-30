@@ -36,8 +36,8 @@ class Device(mqtt.Client):
                 self.config['commandSet']['manufacturer'], self.config['commandSet']['model'] + '.json'))
 
         self.baseTopic = self.config['topicPrefix']+'/'+self.config['location']+'/'+self.config['name']+'/'
-        self._initMqttClient(appConfig.getUserName, appConfig.getUserPassword,
-            appConfig.getBrokerIp, appConfig.getBrokerPort, self.config['lastWill'])
+        self._initMqttClient(appConfig.getUserName(), appConfig.getUserPassword(),
+            appConfig.getBrokerIp(), appConfig.getBrokerPort(), self.config['lastWill'])
 
     # Init device mqtt client
     def _initMqttClient(self, userName, userPassword, brokerIp, brokerPort, lastWill):

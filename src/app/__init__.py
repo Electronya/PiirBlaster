@@ -4,8 +4,8 @@ from flask_cors import CORS
 
 import logging
 
-from config import Config
-from device import DeviceManager
+from .config import Config
+from .device import DeviceManager
 
 socketio = SocketIO(cors_allowed_origins="*")
 
@@ -25,7 +25,7 @@ def createApp(debug=False):
     devManager = DeviceManager(logger, appConfig)
 
     # Setup configuration API
-    import ./api
+    from . import api
 
     socketio.init_app(app)
     logger.info('App setup done')
