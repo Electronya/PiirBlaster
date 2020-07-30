@@ -14,7 +14,7 @@ function isServiceInstalled() {
 
 function deployNewSrc() {
     echo -e "\e[1;123m*** DEPLOYING NEW SOURCE CODE ***"
-    rsync -avz --delete ./ $1:PirBlaster
+    rsync -avz --delete --exclude venv ./ $1:PirBlaster
     if [[ $? -ne 0 ]]
     then
         echo -e "\e[1;124mSOURCE DEPLOYMENT FAILED"
