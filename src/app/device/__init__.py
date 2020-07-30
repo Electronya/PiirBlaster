@@ -1,8 +1,12 @@
 import paho.mqtt.client as mqtt
+from ircodec.command import CommandSet
+
 import os
 import json
 
-from ircodec.command import CommandSet
+CMD_SETS_ROOT = './commandSets'
+SAVE_CMD_SET = 'Saving command set'
+ERR_CMD_SET = 'Error accessing command set file!!'
 
 class Device(mqtt.Client):
     # Constants
@@ -16,8 +20,8 @@ class Device(mqtt.Client):
     ERROR_MSG = 'unsupported'
 
     # Constructor
-    def __init__(self, logger, mqttConfig, devConfig, isNew=False):
-        super().__init__(client_id=devConfig['location']+'.'+devConfig['name'])
+    def __init__(self, logger, appConfig, devConfig, isNew=False):
+        super().__init__(client_id=f"{devConfig['location']}.{devConfig['name']}")
         self.config = devConfig
         self.logger = logger
 
@@ -32,23 +36,24 @@ class Device(mqtt.Client):
                 self.config['commandSet']['manufacturer'], self.config['commandSet']['model'] + '.json'))
 
         self.baseTopic = self.config['topicPrefix']+'/'+self.config['location']+'/'+self.config['name']+'/'
-        self._initMqttClient(mqttConfig['user'], mqttConfig['broker'], self.config['lastWill'])
+        self._initMqttClient(appConfig.getUserName, appConfig.getUserPassword,
+            appConfig.getBrokerIp, appConfig.getBrokerPort, self.config['lastWill'])
 
     # Init device mqtt client
-    def _initMqttClient(self, user, broker, lastWill):
+    def _initMqttClient(self, userName, userPassword, brokerIp, brokerPort, lastWill):
         willTopic = self.baseTopic + self.STATUS_TOPIC
 
         # Set client settings
         self.will_set(willTopic, self.OFFLINE_MSG, lastWill['qos'], lastWill['retain'])
-        self.username_pw_set(user['name'], user['password'])
+        self.username_pw_set(userName, userPassword)
         self.tls_set()
         self.tls_insecure_set(True)
 
-        self.logger.info(f"{self.config['location']}.{self.config['name']}: Connecting to {broker['ip']}:{broker['port']}")
-        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Connecting as {user['name']} with password {user['password']}")
+        self.logger.info(f"{self.config['location']}.{self.config['name']}: Connecting to {brokerIp}:{brokerPort}")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Connecting as {userName} with password {userPassword}")
 
         # Connect to broker
-        self.connect(broker['ip'], port=broker['port'])
+        self.connect(brokerIp, port=brokerPort)
 
         # Start network loop
         self.loop_start()
@@ -137,25 +142,6 @@ class Device(mqtt.Client):
         self.logger(f"{self.config['location']}.{self.config['name']}: Deleting command {command} from command set")
         self.commandSet.remove(command)
 
-    # Save device Config
-    def saveConfig(self):
-        result = {'result': 'fail'}
-        try:
-            with open('./config/devices.json') as configFile:
-                deviceConfigs = json.loads(configFile.read())
-                devConfigItr = filter(lambda device: device['name'] == self.config['name'], deviceConfigs)
-                deviceConfig = next(devConfigItr, None)
-                if deviceConfig is not None:
-                    deviceConfig = self.config
-                else:
-                    deviceConfigs.append(self.config)
-                devConfigsContent = json.dumps(deviceConfigs, sort_keys=True, indent=2)
-                configFile.write(devConfigsContent)
-            result['result'] = 'success'
-        except EnvironmentError:
-            result['message'] = 'Error accessing devices configuration file!!'
-        return result
-
     # Save device command set
     def saveCommandSet(self):
         result = {'result': 'fail'}
@@ -165,3 +151,100 @@ class Device(mqtt.Client):
         except EnvironmentError:
             result['message'] = 'Error accessing command set file'
         return result
+
+class DeviceManager:
+    MODULE_ID = 'DeviceManager'
+
+    DEVICES_FILE = './config/app/devices.json'
+    LOAD_DEVS = 'Loading devices'
+    SAVE_DEVS = 'Saving devices'
+    ERR_SAVE_DEVS = 'Error accessing devices file!!'
+
+    DEFAULT_CONFIG = {
+        'name': 'myDevice',
+        'location': 'myDevLocation',
+        'linkedEmitter': 'OUT0',
+        'commandSet': {
+            'model': 'rm-s103',
+            'manufacturer': 'sony',
+            'description': 'My Device Description',
+            'emitterGpio': 22,
+            'receiverGpio': 11,
+            'packetGap': 0.01,
+        },
+        'topicPrefix': 'myDevPrefix',
+        'lastWill': {
+            'qos': 1,
+            'retain': True,
+        },
+    }
+
+    devices = []
+
+    # Contructor
+    def __init__(self, logger, appConfig):
+        devsConfig = None
+        self.appConfig = appConfig
+        self.logger = logger
+        self.logger.info(f"{self.MODULE_ID}: {self.LOAD_DEVS}")
+
+        # Loading devices
+        with open(self.DEVICES_FILE) as devicesFile:
+            devsConfig = json.loads(devicesFile.read())
+
+        for devConfig in devsConfig:
+            self.devices.append(Device(self.logger, appConfig, devConfig))
+
+    def getDefaultConfig(self):
+        return self.DEFAULT_CONFIG
+
+    def getDeviceByName(self, name, location):
+        filterItr = filter(lambda device: device.getConfig()['name'] == name and
+            device.getConfig()['location'] == location, self.devices)
+        return next(filterItr, None)
+
+    def getDeviceByIdx(self, devIdx):
+        if devIdx < len(self.devices):
+            return self.devices[devIdx]
+        return None
+
+    def getDevsCount(self):
+        return len(self.devices)
+
+    def getDevices(self):
+        return self.devices
+
+    def addDevice(self, newDevConfig):
+        self.devices.append(Device(self.logger, self.appConfig, newDevConfig, isNew=True))
+
+    def saveDevices(self):
+        devsConfig = []
+        result = {'result': 'failed'}
+
+        for device in self.devices:
+            devsConfig.append(device.getConfig())
+
+        self.logger.info(f"{self.MODULE_ID}: {self.SAVE_DEVS}")
+        try:
+            with open(self.DEVICES_FILE) as devicesFile:
+                newContent = json.dumps(devsConfig, sort_keys=True, indent=2)
+                devicesFile.write(newContent)
+            result['result'] = 'success'
+        except EnvironmentError:
+            result['message'] = self.ERR_SAVE_DEVS
+            self.logger.error(f"{self.MODULE_ID}: {result['message']}")
+        return result
+
+    def listManufacturer(self):
+        manufacturers = []
+        for r, d, f in os.walk(CMD_SETS_ROOT):
+            for manufacturer in d:
+                manufacturers.append(manufacturer)
+        return manufacturers
+
+    def listCommandSets(self, manufacturer):
+        cmdSets = []
+        for r, d, f in os.walk(os.path.join(CMD_SETS_ROOT, manufacturer)):
+            for commandSet in f:
+                cmdSets.append(commandSet[:-5])
+        return cmdSets
