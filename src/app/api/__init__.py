@@ -3,6 +3,7 @@ from flask_socketio import emit
 
 from .. import socketio
 from .. import logger
+from .. import appConfig
 from .. import devManager
 
 MODULE_ID = 'socketio.api'
@@ -35,56 +36,45 @@ def onGetCmdSetsList(payload):
 def onGetDevicesList(payload):
     logger.info(f"{MODULE_ID}: Received getDevicesList message from {request.remote_addr}")
     logger.debug(payload)
-    emit('devicesList', {'result': 'success', 'devices': devicesConfig})
+    emit('devicesList', {'result': 'success', 'devices': devManager.getDevsConfigList})
 
 @socketio.on('addDevice')
 def onAddDevice(payload):
-    result = {'result': 'fail'}
     logger.info(f"{MODULE_ID}: Received addDevice message from {request.remote_addr}")
     logger.debug(payload['newDevConfig'])
-    if utils.filterDevice(payload['newDevConfig']) is None:
-        devicesConfig.append(payload['newDevConfig'])
-        devices.append(Device(logger, mqttConfig, payload['newDevConfig'], isNew=True))
-        result['newDevice'] = devicesConfig[-1]
-    else:
-        result['message'] = f"Device {payload['newDevConfig']['location']}.{payload['newDevConfig']['name']} already exists!!"
+    result = devManager.addDevice(payload['newDevConfig'])
     emit('deviceAdded', result)
-
 
 @socketio.on('updateDevice')
 def onUpdateDevice(payload):
-    resPayload= {'result': 'success'}
+    result = {'result': 'success'}
     logger.info(f"{MODULE_ID}: Received updateDevice message from {request.remote_addr}")
     logger.debug(payload)
-    devToUpdate = utils.filterDevice(payload['updatedDevConfig'])
+    devToUpdate = devManager.getDeviceByIdx(payload['deviceIdx'])
     if devToUpdate is not None:
-        devToUpdate.setConfig(payload)
-        resPayload['newConfig'] = devToUpdate.getConfig()
+        devToUpdate.setConfig(payload['updatedDevConfig'])
+        result['newConfig'] = devToUpdate.getConfig()
     else:
-        resPayload['result'] = 'fail'
-        resPayload['message'] = 'Device not found!!'
-    emit('deviceUpdated', resPayload)
+        result['result'] = 'failed'
+        result['message'] = 'Device not found!!'
+    emit('deviceUpdated', result)
 
-@socketio.on('saveDevCongig')
-def onSaveDevConfig(payload):
-    resPayload = {'result': 'fail'}
+@socketio.on('saveDevices')
+def onSaveDevices(payload):
     logger.info(f"{MODULE_ID}: Received saveDeviceConfig message from {request.remote_addr}")
     logger.debug(payload)
-    devToSave = utils.filterDevice(payload['deviceToSave'])
-    if devToSave is not None:
-        resPayload = devToSave.saveConfig()
-    else:
-        resPayload['message'] = 'Device not found!!'
-    emit('devConfigSaved', resPayload)
+    result = devManager.saveDevices()
+    emit('devicesSaved', result)
 
 @socketio.on('saveDevCommandSet')
 def onSaveDevCommandSet(payload):
-    resPayload = {'result': 'fail'}
+    result = {'result': 'failed'}
     logger.info(f"{MODULE_ID}: Received saveDevCommandSet message from {request.remote_addr}")
     logger.debug(payload)
-    devToSave = utils.filterDevice(payload['deviceToSave'])
+    devToSave = devManager.getDeviceByName(payload['deviceToSave']['name'],
+        payload['deviceToSave']['location'])
     if devToSave is not None:
-        resPayload = devToSave.saveCommandSet()
+        result = devToSave.saveCommandSet()
     else:
-        resPayload['message'] = 'Device not found!!'
-    emit('devCmdSetSaved', resPayload)
+        result['message'] = 'Device not found!!'
+    emit('devCmdSetSaved', result)

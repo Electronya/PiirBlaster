@@ -10,6 +10,7 @@ from .device import DeviceManager
 socketio = SocketIO(cors_allowed_origins="*")
 
 logger = None
+appConfig = None
 devManager = None
 
 def createApp(debug=False):

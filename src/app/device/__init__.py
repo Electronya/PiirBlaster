@@ -117,34 +117,42 @@ class Device(mqtt.Client):
         }
         switcher[logLevel](f"{self.config['location']}.{self.config['name']}: {logMsg}")
 
+    # Get device name
+    def getName(self):
+        return self.config['name']
+
+    # Get device location
+    def getLocation(self):
+        return self.config['location']
+
     # Set device config
     def setConfig(self, config):
-        self.logger(f"{self.config['location']}.{self.config['name']}: Setting device config to {config}")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Setting device config to {config}")
         self.config = config
 
     # Get device config
     def getConfig(self):
-        self.logger(f"{self.config['location']}.{self.config['name']}: Getting device config")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Getting device config")
         return self.config
 
     # Get command list
     def getCommandList(self):
-        self.logger(f"{self.config['location']}.{self.config['name']}: Getting command list")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Getting command list")
         return self.commandSet.to_json()
 
     # Add a command
     def addCommand(self, command, description):
-        self.logger(f"{self.config['location']}.{self.config['name']}: Adding command {command} to command set")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Adding command {command} to command set")
         self.commandSet.add(command, description=description)
 
     # Delete a command
     def deleteCommand(self, command):
-        self.logger(f"{self.config['location']}.{self.config['name']}: Deleting command {command} from command set")
+        self.logger.debug(f"{self.config['location']}.{self.config['name']}: Deleting command {command} from command set")
         self.commandSet.remove(command)
 
     # Save device command set
     def saveCommandSet(self):
-        result = {'result': 'fail'}
+        result = {'result': 'failed'}
         try:
             self.commandSet.save_as(os.path.join('./commandSets', self.config['commandSet'] + '.json'))
             result['result'] = 'success'
@@ -215,7 +223,28 @@ class DeviceManager:
         return self.devices
 
     def addDevice(self, newDevConfig):
-        self.devices.append(Device(self.logger, self.appConfig, newDevConfig, isNew=True))
+        devAlreadyExist = False
+        result = {'result': 'failed'}
+
+        for device in self.devices:
+            if device.getName() == newDevConfig['name'] and device.getLocation() == newDevConfig['location']:
+                devAlreadyExist = True
+
+        if devAlreadyExist:
+            result['message'] = "Error: Device already exists!!"
+        else:
+            self.devices.append(Device(self.logger, self.appConfig, newDevConfig, isNew=True))
+            result['result'] = 'success'
+
+        return result
+
+    def getDevsConfigList(self):
+        devsConfigList = []
+
+        for device in self.devices:
+            devsConfigList.append(device.getConfig())
+
+        return devsConfigList
 
     def saveDevices(self):
         devsConfig = []
