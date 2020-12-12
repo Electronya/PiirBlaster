@@ -11,7 +11,7 @@ class Text:
 
 # Commands class
 class Command:
-    INSTALL_PY_DEPS = 'sudo apt-get install -y python3 python3-distutils python3-pip python3-setuptools'
+    INSTALL_PY_DEPS = 'sudo apt-get install -y python3 python3-distutils python3-pip python3-setuptools python3-venv'
     CLONE_PIIRBLASTER = 'git clone https://github.com/Electronya/PiirBlaster.git'
     CREATE_PIIRBLASTER_SVC = 'sudo cp ./PiirBlaster/scripts/services/piirblaster.service /etc/systemd/system'
     ENABLE_PIIRBLASTER_SVC = 'sudo systemctl enable piirblaster.service'
