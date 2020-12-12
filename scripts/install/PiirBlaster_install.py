@@ -11,17 +11,18 @@ class Text:
 
 # Commands class
 class Command:
-    CLONE_PIRBLASTER = 'git clone git@github.com:Electronya/PirBlaster.git'
-    CREATE_PIRBLASTER_SVC = 'sudo cp ./PirBlaster/scripts/services/pirblaster.service /etc/systemd/system'
-    ENABLE_PIRBLASTER_SVC = 'sudo systemctl enable pirblaster.service'
-    START_PIRBLASTER_SVC = 'sudo systemctl start pirblaster.service'
+    INSTALL_PY_DEPS = 'sudo apt-get install -y python3 python3-distutils python3-pip python3-setuptools'
+    CLONE_PIIRBLASTER = 'git clone https://github.com/Electronya/PiirBlaster.git'
+    CREATE_PIIRBLASTER_SVC = 'sudo cp ./PiirBlaster/scripts/services/piirblaster.service /etc/systemd/system'
+    ENABLE_PIIRBLASTER_SVC = 'sudo systemctl enable piirblaster.service'
+    START_PIIRBLASTER_SVC = 'sudo systemctl start piirblaster.service'
     CREATE_VRITUAL_ENV = 'python3 -m venv venv'
     INSTALL_DEPENDENCIES = 'venv/bin/pip install -r requirements.txt'
     DWNLD_PIGPIO = 'wget https://github.com/joan2937/pigpio/archive/master.zip'
     UNZIP_PIGPIO = 'unzip master.zip'
     BUILD_PIGPIO = 'make'
     INSTALL_PIGPIO = 'sudo make install'
-    CREATE_PIGPIO_SVC = 'sudo cp ./PirBlaster/scripts/services/pigpiod.service /etc/systemd/system'
+    CREATE_PIGPIO_SVC = 'sudo cp ./PiirBlaster/scripts/services/pigpiod.service /etc/systemd/system'
     ENABLE_PIGPIO_SVC = 'sudo systemctl enable pigpiod.service'
     START_PIGPIO_SVC = 'sudo systemctl start pigpiod.service'
 
@@ -118,21 +119,31 @@ def setupPigpioSvc():
     print(f"{Text.FAIL}SETTING UP PIGPIO SERVICE FAILED!!!{Text.ENDC}")
     return False
 
-# Clone PirBlaster repo
-def clonePirBlaster():
-    # TODO: Copuing the deployment key
-    print(f"{Text.HEADER}*** CLONING PIRBLASTER REPO ***{Text.ENDC}")
-    cmdResult = execCommand(Command.CLONE_PIRBLASTER)
+# Install Python dependencies
+def installPythonDeps():
+    print(f"{Text.HEADER}*** INSTALLING PYTHON DEPENDENCIES ***{Text.ENDC}")
+    cmdResult = execCommand(Command.INSTALL_PY_DEPS)
     if cmdResult != 0:
-        print(f"{Text.FAIL}CLONING PIRBLASTER FAILED!!!{Text.ENDC}")
+        print(f"{Text.FAIL}INSTALLING PYTHON DEPS FAILED!!!{Text.ENDC}")
         return False
-    print(f"{Text.SUCCESS}CLONING PIRBLASTER DONE{Text.ENDC}")
+    print(f"{Text.SUCCESS}INTALLING PYTHON DEPS DONE{Text.ENDC}")
+    return True
+
+# Clone PiirBlaster repo
+def clonePiirBlaster():
+    # TODO: Copuing the deployment key
+    print(f"{Text.HEADER}*** CLONING PiirBlaster REPO ***{Text.ENDC}")
+    cmdResult = execCommand(Command.CLONE_PIIRBLASTER)
+    if cmdResult != 0:
+        print(f"{Text.FAIL}CLONING PiirBlaster FAILED!!!{Text.ENDC}")
+        return False
+    print(f"{Text.SUCCESS}CLONING PiirBlaster DONE{Text.ENDC}")
     return True
 
 # Creating virtual environment
 def createVirtualEnv():
     print(f"{Text.HEADER}*** CREATING VIRTUAL ENVIRONMENT ***{Text.ENDC}")
-    os.chdir('PirBlaster')
+    os.chdir('PiirBlaster')
     cmdResult = execCommand(Command.CREATE_VRITUAL_ENV)
     if cmdResult != 0:
         print(f"{Text.FAIL}CREATING VIRTUAL ENVIRONEMENT FAILED!!!{Text.ENDC}")
@@ -144,66 +155,67 @@ def createVirtualEnv():
 
 # Install dependencies
 def installDependencies():
-    print(f"{Text.HEADER}*** INSTALLING PIRBLASTER DEPENDENCIES ***{Text.ENDC}")
+    print(f"{Text.HEADER}*** INSTALLING PiirBlaster DEPENDENCIES ***{Text.ENDC}")
     cmdResult = execCommand(Command.INSTALL_DEPENDENCIES)
     if cmdResult != 0:
-        print(f"{Text.FAIL}INSTALLING PIRBLASTER DEPENDENCIES FAILED!!!{Text.ENDC}")
+        print(f"{Text.FAIL}INSTALLING PiirBlaster DEPENDENCIES FAILED!!!{Text.ENDC}")
         return False
-    print(f"{Text.SUCCESS}INSTALLING PIRBLASTER DEPENDENCIES DONE{Text.ENDC}")
+    print(f"{Text.SUCCESS}INSTALLING PiirBlaster DEPENDENCIES DONE{Text.ENDC}")
     os.chdir('..')
     return True
 
-# Create PirBlaster service
-def createPirBlasterSvc():
-    print(f"{Text.HEADER}*** CREATING PIRBLASTER SERVICE ***{Text.ENDC}")
-    cmdResult = execCommand(Command.CREATE_PIRBLASTER_SVC)
+# Create PiirBlaster service
+def createPiirBlasterSvc():
+    print(f"{Text.HEADER}*** CREATING PiirBlaster SERVICE ***{Text.ENDC}")
+    cmdResult = execCommand(Command.CREATE_PIIRBLASTER_SVC)
     if cmdResult != 0:
-        print(f"{Text.FAIL}CREATING PIRBLASTER SERVICE FAILED!!!{Text.ENDC}")
+        print(f"{Text.FAIL}CREATING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
         return False
-    print(f"{Text.SUCCESS}CREATING PIRBLASTER SERVICE DONE{Text.ENDC}")
+    print(f"{Text.SUCCESS}CREATING PiirBlaster SERVICE DONE{Text.ENDC}")
     return True
 
-# Enabling PirBlaster Service
-def enablePirBlasterSvc():
-    print(f"{Text.HEADER}*** ENABLING PIRBLASTER SERVICE ***{Text.ENDC}")
-    cmdResult = execCommand(Command.ENABLE_PIRBLASTER_SVC)
+# Enabling PiirBlaster Service
+def enablePiirBlasterSvc():
+    print(f"{Text.HEADER}*** ENABLING PiirBlaster SERVICE ***{Text.ENDC}")
+    cmdResult = execCommand(Command.ENABLE_PIIRBLASTER_SVC)
     if cmdResult != 0:
-        print(f"{Text.FAIL}ENALBING PIRBLASTER SERVICE FAILED!!!{Text.ENDC}")
+        print(f"{Text.FAIL}ENALBING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
         return False
-    print(f"{Text.SUCCESS}ENABLING PIRBLASTER SERVICE DONE{Text.ENDC}")
+    print(f"{Text.SUCCESS}ENABLING PiirBlaster SERVICE DONE{Text.ENDC}")
     return True
 
-# Start PirBlaster Service
-def startPirBlasterSvc():
-    print(f"{Text.HEADER}*** STARTING PIRBLASTER SERVICE ***{Text.ENDC}")
-    cmdResult = execCommand(Command.START_PIRBLASTER_SVC)
+# Start PiirBlaster Service
+def startPiirBlasterSvc():
+    print(f"{Text.HEADER}*** STARTING PiirBlaster SERVICE ***{Text.ENDC}")
+    cmdResult = execCommand(Command.START_PIIRBLASTER_SVC)
     if cmdResult != 0:
-        print(f"{Text.FAIL}STARTING PIRBLASTER SERVICE FAILED!!!{Text.ENDC}")
+        print(f"{Text.FAIL}STARTING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
         return False
-    print(f"{Text.SUCCESS}STARTING PIRBLASTER SERVICE DONE{Text.ENDC}")
+    print(f"{Text.SUCCESS}STARTING PiirBlaster SERVICE DONE{Text.ENDC}")
     return True
 
-# Setup PirBlaster service
-def setupPirBlasterSvc():
+# Setup PiirBlaster service
+def setupPiirBlasterSvc():
     # TODO: Check if sevice is already installed
-    print(f"{Text.HEADER}*** SETTING UP PIRBLASTER SERVICE ***{Text.ENDC}")
+    print(f"{Text.HEADER}*** SETTING UP PiirBlaster SERVICE ***{Text.ENDC}")
     if createVirtualEnv():
         if installDependencies():
-            if createPirBlasterSvc():
-                if enablePirBlasterSvc():
-                    if startPirBlasterSvc():
-                        print(f"{Text.SUCCESS}SETTING UP PIRBLASTER SERVICE DONE{Text.ENDC}")
+            if createPiirBlasterSvc():
+                if enablePiirBlasterSvc():
+                    if startPiirBlasterSvc():
+                        print(f"{Text.SUCCESS}SETTING UP PiirBlaster SERVICE DONE{Text.ENDC}")
                         return True
-    print(f"{Text.FAIL}SETTING UP PIRBLASTER SERVICE FAILED!!!{Text.ENDC}")
+    print(f"{Text.FAIL}SETTING UP PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
     return False
 
 # print(f"{Text.HEADER}*** SERVICE CONFIGURATION ***{Text.ENDC}")
 # Ask for the hostname the service will use for advertising
 # hostname = input(f"Please enter the hostname that the service will use for advertising:")
 
-if clonePirBlaster():
-    if setupPigpioSvc():
-        if setupPirBlasterSvc():
-            print(f"{Text.SUCCESS}INSATALLING PIRBLASTER SERVICE DONE{Text.ENDC}")
-            exit()
-print(f"{Text.FAIL}INTALLING PIRBLASTER SERVICE FAILED!!!{Text.ENDC}")
+if installPythonDeps():
+    if clonePiirBlaster():
+        if setupPigpioSvc():
+            if setupPiirBlasterSvc():
+                print(f"{Text.SUCCESS}INSATALLING PiirBlaster SERVICE DONE{Text.ENDC}")
+                exit()
+print(f"{Text.FAIL}INTALLING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")

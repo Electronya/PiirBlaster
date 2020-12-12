@@ -1,0 +1,13 @@
+[Unit]
+Description=PiirBlaster: Raspberry Pi IR Blaster
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=pi
+WorkingDirectory=/home/pi/PiirBlaster
+ExecStart=/home/pi/PiirBlaster/venv/bin/python ./src/PiirBlaster.py
+Restart=on-abort
+
+[Install]
+WantedBy=multi-user.target
