@@ -28,11 +28,11 @@ class Config:
         with open(os.path.join(self.CONFIG_PATH, self.HW_CONFIG_FILE)) as hwConfig:
             self.hwConfig = json.loads(hwConfig.read())
 
-    def getBrokerIp(self):
-        return self.mqttConfig['broker']['ip']
+    def getBrokerHostname(self):
+        return self.mqttConfig['broker']['hostname']
 
-    def setBrokerIp(self, newIp):
-        self.mqttConfig['broker']['ip'] = newIp
+    def setBrokerHostname(self, newIp):
+        self.mqttConfig['broker']['hostname'] = newIp
 
     def getBrokerPort(self):
         return self.mqttConfig['broker']['port']
