@@ -107,15 +107,10 @@ def startPigpioSvc():
 def setupPigpioSvc():
     # TODO: Check if sevice is already installed & Split in multiple functions
     print(f"{Text.HEADER}*** SETTING UP PIGPIO SERVICE ***{Text.ENDC}")
-    if downloadPIGPIO():
-        if unzipPIGPIO():
-            if buildPIGPIO():
-                if installPIGPIO():
-                    if createPigpioSvc():
-                        if enablePigpioSvc():
-                            if startPigpioSvc():
-                                print(f"{Text.SUCCESS}SETTING UP PIGPIO SERVICE DONE{Text.ENDC}")
-                                return True
+    if (downloadPIGPIO() and unzipPIGPIO() and buildPIGPIO() and installPIGPIO() and
+        createPigpioSvc() and enablePigpioSvc() and startPigpioSvc()):
+        print(f"{Text.SUCCESS}SETTING UP PIGPIO SERVICE DONE{Text.ENDC}")
+        return True
     print(f"{Text.FAIL}SETTING UP PIGPIO SERVICE FAILED!!!{Text.ENDC}")
     return False
 
@@ -131,7 +126,6 @@ def installPythonDeps():
 
 # Clone PiirBlaster repo
 def clonePiirBlaster():
-    # TODO: Copuing the deployment key
     print(f"{Text.HEADER}*** CLONING PiirBlaster REPO ***{Text.ENDC}")
     cmdResult = execCommand(Command.CLONE_PIIRBLASTER)
     if cmdResult != 0:
@@ -150,8 +144,6 @@ def createVirtualEnv():
         return False
     print(f"{Text.SUCCESS}CREATING VIRTUAL ENVIRONMENT DONE{Text.ENDC}")
     return True
-
-# TODO: Install python3-venv (sudo apt install python3-venv)
 
 # Install dependencies
 def installDependencies():
@@ -198,13 +190,10 @@ def startPiirBlasterSvc():
 def setupPiirBlasterSvc():
     # TODO: Check if sevice is already installed
     print(f"{Text.HEADER}*** SETTING UP PiirBlaster SERVICE ***{Text.ENDC}")
-    if createVirtualEnv():
-        if installDependencies():
-            if createPiirBlasterSvc():
-                if enablePiirBlasterSvc():
-                    if startPiirBlasterSvc():
-                        print(f"{Text.SUCCESS}SETTING UP PiirBlaster SERVICE DONE{Text.ENDC}")
-                        return True
+    if (createVirtualEnv() and installDependencies() and createPiirBlasterSvc() and
+        enablePiirBlasterSvc() and startPiirBlasterSvc()):
+        print(f"{Text.SUCCESS}SETTING UP PiirBlaster SERVICE DONE{Text.ENDC}")
+        return True
     print(f"{Text.FAIL}SETTING UP PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
     return False
 
@@ -212,10 +201,7 @@ def setupPiirBlasterSvc():
 # Ask for the hostname the service will use for advertising
 # hostname = input(f"Please enter the hostname that the service will use for advertising:")
 
-if installPythonDeps():
-    if clonePiirBlaster():
-        if setupPigpioSvc():
-            if setupPiirBlasterSvc():
-                print(f"{Text.SUCCESS}INSATALLING PiirBlaster SERVICE DONE{Text.ENDC}")
-                exit()
+if (installPythonDeps() and clonePiirBlaster() and setupPigpioSvc() and setupPiirBlasterSvc()):
+    print(f"{Text.SUCCESS}INSATALLING PiirBlaster SERVICE DONE{Text.ENDC}")
+    exit()
 print(f"{Text.FAIL}INTALLING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
