@@ -1,10 +1,10 @@
 {
   "broker": {
-    "ip": "192.168.1.10",
-    "port": 8883
+    "hostname": "",
+    "port": 1883
   },
   "user": {
-    "name": "pirblaster",
-    "password": "z15#9H0VSm9IRPE0T49B"
+    "name": "",
+    "password": ""
   }
 }
