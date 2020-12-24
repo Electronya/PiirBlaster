@@ -108,7 +108,7 @@ def setupPigpioSvc():
     # TODO: Check if sevice is already installed & Split in multiple functions
     print(f"{Text.HEADER}*** SETTING UP PIGPIO SERVICE ***{Text.ENDC}")
     if (downloadPIGPIO() and unzipPIGPIO() and buildPIGPIO() and installPIGPIO() and
-        createPigpioSvc() and enablePigpioSvc() and startPigpioSvc()):
+            createPigpioSvc() and enablePigpioSvc() and startPigpioSvc()):
         print(f"{Text.SUCCESS}SETTING UP PIGPIO SERVICE DONE{Text.ENDC}")
         return True
     print(f"{Text.FAIL}SETTING UP PIGPIO SERVICE FAILED!!!{Text.ENDC}")
@@ -191,7 +191,7 @@ def setupPiirBlasterSvc():
     # TODO: Check if sevice is already installed
     print(f"{Text.HEADER}*** SETTING UP PiirBlaster SERVICE ***{Text.ENDC}")
     if (createVirtualEnv() and installDependencies() and createPiirBlasterSvc() and
-        enablePiirBlasterSvc() and startPiirBlasterSvc()):
+            enablePiirBlasterSvc() and startPiirBlasterSvc()):
         print(f"{Text.SUCCESS}SETTING UP PiirBlaster SERVICE DONE{Text.ENDC}")
         return True
     print(f"{Text.FAIL}SETTING UP PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
