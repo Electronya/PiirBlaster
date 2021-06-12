@@ -1,5 +1,6 @@
 Flask==1.1.2
 Flask-Cors==3.0.10
 Flask-SocketIO==5.0.1
+ircodec==0.3.0
 paho-mqtt==1.5.1
 pigpio==1.78
