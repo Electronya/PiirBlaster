@@ -217,7 +217,12 @@ def setupPiirBlasterSvc():
 # Ask for the hostname the service will use for advertising
 # hostname = input(f"Please enter the hostname that the service will use for advertising:")
 
-if (installPythonDeps() and clonePiirBlaster() and setupPigpioSvc() and setupPiirBlasterSvc()):
-    print(f"{Text.SUCCESS}INSATALLING PiirBlaster SERVICE DONE{Text.ENDC}")
-    exit()
-print(f"{Text.FAIL}INTALLING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
+# Install PiirBlaster
+def install():
+    if (installPythonDeps() and clonePiirBlaster() and setupPigpioSvc() and setupPiirBlasterSvc()):
+        print(f"{Text.SUCCESS}INSATALLING PiirBlaster SERVICE DONE{Text.ENDC}")
+        exit()
+    print(f"{Text.FAIL}INTALLING PiirBlaster SERVICE FAILED!!!{Text.ENDC}")
+
+if __name__ == '__main__':
+    install()
