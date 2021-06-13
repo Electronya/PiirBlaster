@@ -28,8 +28,6 @@ class App:
         """
         self.logger.info('Running the app.')
         self.deviceMngr.startLoops()
-        while True:
-            pass
 
     def stop(self):
         """
@@ -43,6 +41,8 @@ if __name__ == '__main__':
     app = App()
     try:
         app.run()
+        while True:
+            pass
     except Exception:
         app.stop()
         sys.exit(0)
