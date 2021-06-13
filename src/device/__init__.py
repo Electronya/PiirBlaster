@@ -45,12 +45,11 @@ class Device(mqtt.Client):
             self.commandSet = CommandSet.load(os.path.join('./commandSets',
                                               manufacturer, f"{model}.json"))
 
-        self.baseTopic = f"{self.config['topicPrefix']}/"
-        f"{self.config['location']}/{self.config['name']}/"
+        self.baseTopic = f"{self.config['topicPrefix']}/{self.config['location']}/{self.config['name']}/"   # noqa: E501
 
         self._initMqttClient(appConfig.getUserName(),
                              appConfig.getUserPassword(),
-                             appConfig.getBrokerIp(),
+                             appConfig.getBrokerHostname(),
                              appConfig.getBrokerPort(),
                              self.config['lastWill'])
 
@@ -63,8 +62,9 @@ class Device(mqtt.Client):
         self.will_set(willTopic, self.OFFLINE_MSG,
                       lastWill['qos'], lastWill['retain'])
         self.username_pw_set(userName, userPassword)
-        self.tls_set()
-        self.tls_insecure_set(True)
+        # TODO: Implement switch for secure or not.
+        # self.tls_set()
+        # self.tls_insecure_set(True)
 
         self.logger.info(f"Connecting to {brokerIp}:{brokerPort}")
         self.logger.debug(f"Connecting as {userName} with password "
@@ -72,9 +72,6 @@ class Device(mqtt.Client):
 
         # Connect to broker
         self.connect(brokerIp, port=brokerPort)
-
-        # Start network loop
-        self.loop_start()
 
     # Publish command result
     def _publishCmdResult(self, success):
@@ -185,9 +182,8 @@ class DeviceManager:
     """
     The device manager class.
     """
-    DEVICES_FILE = './config/app/devices.json'
-    LOAD_DEVS = 'Loading devices'
-    SAVE_DEVS = 'Saving devices'
+    DEVICES_FILE = './config/components/devices.json'
+    SAVE_DEVS = 'Devices saved.'
     ERR_SAVE_DEVS = 'Error accessing devices file!!'
 
     DEFAULT_CONFIG = {
@@ -216,14 +212,28 @@ class DeviceManager:
         devsConfig = None
         self.appConfig = appConfig
         self.logger = logger.getLogger('DeviceManager')
-        self.logger.info(f"{self.MODULE_ID}: {self.LOAD_DEVS}")
+        self.logger.info('Loading devices')
 
         # Loading devices
         with open(self.DEVICES_FILE) as devicesFile:
             devsConfig = json.loads(devicesFile.read())
 
         for devConfig in devsConfig:
-            self.devices.append(Device(self.logger, appConfig, devConfig))
+            self.devices.append(Device(logger, appConfig, devConfig))
+
+    def startLoops(self):
+        self.logger.info('Starting device loops.')
+        for device in self.devices:
+            self.logger.debug(f"{device.getLocation()}.{device.getName()}: "
+                              f"starting loop")
+            device.loop_start()
+
+    def stopLoops(self):
+        self.logger.info('Stopping device loops.')
+        for device in self.devices:
+            self.logger.debug(f"{device.getLocation()}.{device.getName()}: "
+                              f"stopping loop")
+            device.disconnect()
 
     def getDefaultConfig(self):
         return self.DEFAULT_CONFIG
@@ -278,15 +288,15 @@ class DeviceManager:
         for device in self.devices:
             devsConfig.append(device.getConfig())
 
-        self.logger.info(f"{self.MODULE_ID}: {self.SAVE_DEVS}")
+        self.logger.info('Saving devices')
         try:
             with open(self.DEVICES_FILE) as devicesFile:
                 newContent = json.dumps(devsConfig, sort_keys=True, indent=2)
                 devicesFile.write(newContent)
-            result['result'] = 'success'
+            result['result'] = self.SAVE_DEVS
         except EnvironmentError:
             result['message'] = self.ERR_SAVE_DEVS
-            self.logger.error(f"{self.MODULE_ID}: {result['message']}")
+            self.logger.error(result['message'])
         return result
 
     def listManufacturer(self):

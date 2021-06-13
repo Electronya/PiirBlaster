@@ -2,7 +2,7 @@
 
 function isServiceInstalled() {
     echo -e "\e[1;123m*** TEST IF SERVICE IS INSTALLED ON TARGET ***"
-    ssh $1 'test -d ~/PirBlaster'
+    ssh $1 'test -d ~/PiirBlaster'
     if [[ $? -ne 0 ]]
     then
         echo -e "\e[1;124mSERVICE NOT INSTALLED ON TARGET"
@@ -14,7 +14,7 @@ function isServiceInstalled() {
 
 function deployNewSrc() {
     echo -e "\e[1;123m*** DEPLOYING NEW SOURCE CODE ***"
-    rsync -avz --delete --exclude venv ./ $1:PirBlaster
+    rsync -avz --delete --exclude venv ./ $1:PiirBlaster
     if [[ $? -ne 0 ]]
     then
         echo -e "\e[1;124mSOURCE DEPLOYMENT FAILED"
@@ -26,7 +26,7 @@ function deployNewSrc() {
 
 function restartService() {
     echo -e "\e[1;123m*** RESTARTING SERVICE ***"
-    ssh $1 'sudo systemctl restart pirblaster.service'
+    ssh $1 'sudo systemctl restart piirblaster.service'
     if [[ $? -ne 0 ]]
     then
         echo -e "\e[1;124mSERVICE RESTART FAILED"

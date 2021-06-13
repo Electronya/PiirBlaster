@@ -1,8 +1,8 @@
 import sys
 
-from .config import Config
-from .device import DeviceManager
-from .logger import initLogger
+from config import Config
+from device import DeviceManager
+from logger import initLogger
 
 
 class App:
@@ -17,7 +17,7 @@ class App:
         self.logger = logger.getLogger('APP')
         self.logger.info('Initializing the app.')
 
-        self.config = Config()
+        self.config = Config(logger)
         self.deviceMngr = DeviceManager(logger, self.config)
 
         self.logger.info('App initialized.')
@@ -27,12 +27,16 @@ class App:
         Run the application.
         """
         self.logger.info('Running the app.')
+        self.deviceMngr.startLoops()
+        while True:
+            pass
 
     def stop(self):
         """
         Stop the application.
         """
         self.logger.info('Stopping the app.')
+        self.deviceMngr.stopLoops()
 
 
 if __name__ == '__main__':

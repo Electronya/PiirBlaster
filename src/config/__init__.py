@@ -3,7 +3,7 @@ import json
 
 
 class Config:
-    CONFIG_PATH = './config/app'
+    CONFIG_PATH = './config/components'
     HW_CONFIG_FILE = 'hardware.json'
     MQTT_CONFIG_FILE = 'mqtt.json'
 
@@ -14,7 +14,7 @@ class Config:
 
     # Constructor
     def __init__(self, logger):
-        self.logger = logger
+        self.logger = logger.getLogger('CONFIG')
 
         # Reading MQTT config
         self.logger.info('Opening MQTT configuration')
