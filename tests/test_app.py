@@ -13,7 +13,7 @@ class TestApp(TestCase):
     The App class test cases.
     """
     @patch('config.Config.__init__', autospec=True)
-    @patch('device.DeviceManager.__init__', autospec=True)
+    @patch('device.DeviceManager.DeviceManager.__init__', autospec=True)
     def test_conctructorLoadConfig(self, configCont, devMngrConst):
         """
         The constructor must load the configuration by creating a new
@@ -26,7 +26,7 @@ class TestApp(TestCase):
                         'App constructor failed to load the config.')
 
     @patch('config.Config.__init__', autospec=True)
-    @patch('device.DeviceManager.__init__', autospec=True)
+    @patch('device.DeviceManager.DeviceManager.__init__', autospec=True)
     def test_constructorLoadDevMngr(self, configConst, devMngrConst):
         """
         The contructor must load the active devices by instanciating a new
@@ -39,8 +39,8 @@ class TestApp(TestCase):
                         'App constructor failed to load the devices.')
 
     @patch('config.Config.__init__', autospec=True)
-    @patch('device.DeviceManager.__init__', autospec=True)
-    @patch('device.DeviceManager.startLoops', autospec=True)
+    @patch('device.DeviceManager.DeviceManager.__init__', autospec=True)
+    @patch('device.DeviceManager.DeviceManager.startLoops', autospec=True)
     def test_runStartDeviceLoops(self, configConst, devMngrConst,
                                  devMngrStartLoops):
         """
@@ -56,8 +56,8 @@ class TestApp(TestCase):
                         'App.run failed to start the loop of the devices')
 
     @patch('config.Config.__init__', autospec=True)
-    @patch('device.DeviceManager.__init__', autospec=True)
-    @patch('device.DeviceManager.stopLoops', autospec=True)
+    @patch('device.DeviceManager.DeviceManager.__init__', autospec=True)
+    @patch('device.DeviceManager.DeviceManager.stopLoops', autospec=True)
     def test_stopStopDeviceLoops(self, configConst, devMngrConst,
                                  devMngrStopLoops):
         """
