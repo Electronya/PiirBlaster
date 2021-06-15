@@ -31,8 +31,6 @@ class DeviceManager:
         },
     }
 
-    devices = []
-
     # Contructor
     def __init__(self, logger, appConfig):
         """
@@ -46,6 +44,7 @@ class DeviceManager:
         self.appConfig = appConfig
         self.logger = logger.getLogger('DeviceManager')
         self.logger.info('Loading devices')
+        self.devices = []
 
         # Loading devices
         with open(self.DEVICES_FILE) as devicesFile:
@@ -78,7 +77,7 @@ class DeviceManager:
         """
         Get the device default configuration.
         """
-        return self.DEFAULT_CONFIG
+        return self.DEFAULT_CONFIG.copy()
 
     def getDeviceByName(self, name, location):
         """
