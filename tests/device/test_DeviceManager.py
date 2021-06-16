@@ -51,8 +51,7 @@ class TestDevMngr(TestCase):
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
-            appConfig = {}
-            devMngr = DeviceManager(logging, appConfig)         # noqa: F841
+            devMngr = DeviceManager(logging, {})         # noqa: F841
             self.assertEqual(mockedDevice.call_count, len(self.devices),
                              'DeviceManager constructor failed to create '
                              'all the device from the devices faile.')
@@ -64,8 +63,7 @@ class TestDevMngr(TestCase):
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
-            appConfig = {}
-            devMngr = DeviceManager(logging, appConfig)
+            devMngr = DeviceManager(logging, {})
             devMngr.startLoops()
             for dev in self.mockDevs:
                 self.assertTrue(dev.loop_start.called,
@@ -81,8 +79,7 @@ class TestDevMngr(TestCase):
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
-            appConfig = {}
-            devMngr = DeviceManager(logging, appConfig)
+            devMngr = DeviceManager(logging, {})
             defConfig = devMngr.getDefaultConfig()
             self.assertFalse(defConfig is devMngr.DEFAULT_CONFIG,
                              'DeviceManger getDefaultConfig failed to'
@@ -99,11 +96,10 @@ class TestDevMngr(TestCase):
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
-            appconfig = {}
-            devMngr = DeviceManager(logging, appconfig)
+            devMngr = DeviceManager(logging, {})
             with self.assertRaises(LookupError) as context:
                 devMngr.getDeviceByName('prout', 'atlantic')
-            self.assertTrue('Unable to find device atlantic.prout'
+            self.assertTrue('unable to find device atlantic.prout'
                             in str(context.exception),
                             'DeviceManager getDeviceByName failed to raise'
                             'a LookupError when unable to find the device.')
@@ -115,10 +111,33 @@ class TestDevMngr(TestCase):
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
-            appconfig = {}
-            devMngr = DeviceManager(logging, appconfig)
+            devMngr = DeviceManager(logging, {})
             foundDev = devMngr.getDeviceByName(self.devices[1]['name'],
                                                self.devices[1]['location'])
             self.assertTrue(foundDev is self.mockDevs[1],
                             'DeviceManager getDeviceByName failed to found'
                             'the correct device.')
+
+    @patch('device.DeviceManager.Device')
+    def test_getDeviceByIdxOutRange(self, mockedDevice):
+        """
+        The getDeviceByIdx must raise an IndexError if the requested
+        index is out of the range of the devices list.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            with self.assertRaises(IndexError) as context:
+                devMngr.getDeviceByIdx(len(self.devices) + 3)
+            self.assertTrue('list index out of range'
+                            in str(context.exception),
+                            'DeviceManager getDeviceByIdx failed to'
+                            'raise an IndexError when the requested'
+                            'index is out of the range of the devices list.')
+            with self.assertRaises(IndexError) as context:
+                devMngr.getDeviceByIdx((len(self.devices) + 3) * -1)
+            self.assertTrue('list index out of range'
+                            in str(context.exception),
+                            'DeviceManager getDeviceByIdx failed to'
+                            'raise an IndexError when the requested'
+                            'index is out of the range of the devices list.')

@@ -97,7 +97,7 @@ class DeviceManager:
         try:
             return next(filteredDev)
         except Exception:
-            raise LookupError(f"Unable to find device {location}.{name}")
+            raise LookupError(f"unable to find device {location}.{name}")
 
     def getDeviceByIdx(self, devIdx):
         """
@@ -108,11 +108,8 @@ class DeviceManager:
 
         Return:
             The found device if successful, None otherwise.
-        TODO: Use exception.
         """
-        if devIdx < len(self.devices):
-            return self.devices[devIdx]
-        return None
+        return self.devices[devIdx]
 
     def getDevsCount(self):
         """
