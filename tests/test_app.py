@@ -59,7 +59,6 @@ class TestApp(TestCase):
         devMngrMock = Mock()
         devMngrMock.stopLoops.return_value = None
         app = App()
-        print(app.deviceMngr)
         app.deviceMngr = devMngrMock
         app.stop()
         self.assertTrue(devMngrMock.stopLoops.called,
