@@ -70,10 +70,32 @@ class TestDevMngr(TestCase):
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
             appConfig = {}
             devMngr = DeviceManager(logging, appConfig)
-            print('allo', devMngr.getDevices())
             devMngr.startLoops()
             for dev in devs:
                 self.assertTrue(dev.loop_start.called,
                                 'DeviceManager startLoops method failed to '
                                 'call the loop_start method on all '
                                 'the devices.')
+
+    @patch('device.DeviceManager.Device')
+    def test_getDefaultConfig(self, mockedDevice):
+        """
+        The getDefaultConfig method must return a copy of the
+        device default config.
+        """
+        devs = []
+        for device in self.devices:
+            mockedDev = Mock()
+            mockedDev.loop_start.return_value = None
+            devs.append(mockedDev)
+        mockedDevice.side_effect = devs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            appConfig = {}
+            devMngr = DeviceManager(logging, appConfig)
+            defConfig = devMngr.getDefaultConfig()
+            self.assertFalse(defConfig is devMngr.DEFAULT_CONFIG,
+                             'DeviceManger getDefaultConfig failed to'
+                             'to copy the device default config.')
+            self.assertTrue(defConfig == devMngr.DEFAULT_CONFIG,
+                            'DeviceManager getDefaultConfig failed to'
+                            'make a copy of the device default config.')
