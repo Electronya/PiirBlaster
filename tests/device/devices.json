@@ -1,6 +1,6 @@
 [
     {
-        "nanme": "testDev1",
+        "name": "testDev1",
         "location": "testLocation1",
         "linkedEmitter": "OUT0",
         "commandSet": {
@@ -18,7 +18,7 @@
         }
     },
     {
-        "nanme": "testDev2",
+        "name": "testDev2",
         "location": "testLocation2",
         "linkedEmitter": "OUT0",
         "commandSet": {

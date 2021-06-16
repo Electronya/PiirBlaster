@@ -89,12 +89,15 @@ class DeviceManager:
 
         Return:
             The found device if successful, None otherwise.
-        TODO: Use exception.
         """
-        filterItr = filter(lambda device: device.getConfig()['name'] == name
-                           and device.getConfig()['location']
-                           == location, self.devices)
-        return next(filterItr, None)
+        print(f"finding {location}.{name}")
+        filteredDev = filter(lambda device: device.getConfig()['name'] == name
+                             and device.getConfig()['location']
+                             == location, self.devices)
+        try:
+            return next(filteredDev)
+        except Exception:
+            raise LookupError(f"Unable to find device {location}.{name}")
 
     def getDeviceByIdx(self, devIdx):
         """

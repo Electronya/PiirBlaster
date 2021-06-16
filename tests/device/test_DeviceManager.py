@@ -1,6 +1,7 @@
 import json
 import logging
 from unittest import TestCase
+from unittest import mock
 from unittest.mock import Mock, patch, mock_open
 
 
@@ -23,16 +24,20 @@ class TestDevMngr(TestCase):
             self.devicesStr = devFiles.read()
             self.devices = json.loads(self.devicesStr)
 
+        self.mockDevs = []
+        for device in self.devices:
+            mockedDev = Mock()
+            mockedDev.loop_start.return_value = None
+            mockedDev.loop_start.return_value = None
+            mockedDev.getConfig.return_value = device
+            self.mockDevs.append(mockedDev)
+
     @patch('device.DeviceManager.Device')
     def test_constructorOpenDevsFile(self, mockedDevice):
         """
         The constructor must open the device configurations file.
         """
-        devs = []
-        for device in self.devices:
-            mockedDev = Mock()
-            devs.append(mockedDev)
-        mockedDevice.side_effect = devs
+        mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open',
                    mock_open(read_data=self.devicesStr)) as mockedFile:
             devMngr = DeviceManager(logging, {})                # noqa: F841
@@ -44,11 +49,7 @@ class TestDevMngr(TestCase):
         The constructor must create all the device in the from
         the devices file.
         """
-        devs = []
-        for device in self.devices:
-            mockedDev = Mock()
-            devs.append(mockedDev)
-        mockedDevice.side_effect = devs
+        mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
             appConfig = {}
             devMngr = DeviceManager(logging, appConfig)         # noqa: F841
@@ -61,17 +62,12 @@ class TestDevMngr(TestCase):
         """
         The startLoops method must call the loopt_start method of each devices.
         """
-        devs = []
-        for device in self.devices:
-            mockedDev = Mock()
-            mockedDev.loop_start.return_value = None
-            devs.append(mockedDev)
-        mockedDevice.side_effect = devs
+        mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
             appConfig = {}
             devMngr = DeviceManager(logging, appConfig)
             devMngr.startLoops()
-            for dev in devs:
+            for dev in self.mockDevs:
                 self.assertTrue(dev.loop_start.called,
                                 'DeviceManager startLoops method failed to '
                                 'call the loop_start method on all '
@@ -83,12 +79,7 @@ class TestDevMngr(TestCase):
         The getDefaultConfig method must return a copy of the
         device default config.
         """
-        devs = []
-        for device in self.devices:
-            mockedDev = Mock()
-            mockedDev.loop_start.return_value = None
-            devs.append(mockedDev)
-        mockedDevice.side_effect = devs
+        mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
             appConfig = {}
             devMngr = DeviceManager(logging, appConfig)
@@ -99,3 +90,35 @@ class TestDevMngr(TestCase):
             self.assertTrue(defConfig == devMngr.DEFAULT_CONFIG,
                             'DeviceManager getDefaultConfig failed to'
                             'make a copy of the device default config.')
+
+    @patch('device.DeviceManager.Device')
+    def test_getDeviceByNameNotFound(self, mockedDevice):
+        """
+        The getDeviceByName must raise a LookupError when the requested
+        device is not found.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            appconfig = {}
+            devMngr = DeviceManager(logging, appconfig)
+            with self.assertRaises(LookupError) as context:
+                devMngr.getDeviceByName('prout', 'atlantic')
+            self.assertTrue('Unable to find device atlantic.prout'
+                            in str(context.exception),
+                            'DeviceManager getDeviceByName failed to raise'
+                            'a LookupError when unable to find the device.')
+
+    @patch('device.DeviceManager.Device')
+    def test_getDeviceByNameDevFound(self, mockedDevice):
+        """
+        The getDeviceByName must return the found device.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            appconfig = {}
+            devMngr = DeviceManager(logging, appconfig)
+            foundDev = devMngr.getDeviceByName(self.devices[1]['name'],
+                                               self.devices[1]['location'])
+            self.assertTrue(foundDev is self.mockDevs[1],
+                            'DeviceManager getDeviceByName failed to found'
+                            'the correct device.')
