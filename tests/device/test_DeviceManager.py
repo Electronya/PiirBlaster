@@ -1,13 +1,11 @@
 import json
 import logging
 from unittest import TestCase
-from unittest import mock
 from unittest.mock import Mock, patch, mock_open
 
 
 import os
 import sys
-from device.Device import Device
 sys.path.append(os.path.abspath('./src'))
 
 from device.DeviceManager import DeviceManager              # noqa: E402
