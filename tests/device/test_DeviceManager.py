@@ -141,3 +141,16 @@ class TestDevMngr(TestCase):
                             'DeviceManager getDeviceByIdx failed to'
                             'raise an IndexError when the requested'
                             'index is out of the range of the devices list.')
+
+    @patch('device.DeviceManager.Device')
+    def test_getDeviceCount(self, mockedDevice):
+        """
+        The getDeviceCount must return the number of active devices.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            devCount = devMngr.getDeviceCount()
+            self.assertEqual(devCount, len(self.devices),
+                             'DeviceManager getDevsCount failed to return'
+                             'the number of active devices.')

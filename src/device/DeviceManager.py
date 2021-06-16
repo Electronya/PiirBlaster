@@ -111,7 +111,7 @@ class DeviceManager:
         """
         return self.devices[devIdx]
 
-    def getDevsCount(self):
+    def getDeviceCount(self):
         """
         Get the active device count.
 

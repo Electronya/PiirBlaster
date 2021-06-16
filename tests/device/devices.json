@@ -34,5 +34,23 @@
             "qos": 2,
             "retain": true
         }
+    },
+    {
+        "name": "testDev3",
+        "location": "testLocation3",
+        "linkedEmitter": "OUT0",
+        "commandSet": {
+            "model": "testModel3",
+            "manufacturer": "testManufacturer3",
+            "Description": "My test device 3",
+            "emitterGpio": 9,
+            "receiverGpio": 7,
+            "packetGap": 0.03
+        },
+        "topicPrefix": "testPrefix3",
+        "lastWill": {
+            "qos": 2,
+            "retain": true
+        }
     }
 ]
