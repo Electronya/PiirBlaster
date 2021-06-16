@@ -7,6 +7,7 @@ from unittest.mock import Mock, patch, mock_open
 
 import os
 import sys
+from device.Device import Device
 sys.path.append(os.path.abspath('./src'))
 
 from device.DeviceManager import DeviceManager              # noqa: E402
@@ -91,7 +92,7 @@ class TestDevMngr(TestCase):
     @patch('device.DeviceManager.Device')
     def test_getDeviceByNameNotFound(self, mockedDevice):
         """
-        The getDeviceByName must raise a LookupError when the requested
+        The getDeviceByName method must raise a LookupError when the requested
         device is not found.
         """
         mockedDevice.side_effect = self.mockDevs
@@ -107,7 +108,7 @@ class TestDevMngr(TestCase):
     @patch('device.DeviceManager.Device')
     def test_getDeviceByNameDevFound(self, mockedDevice):
         """
-        The getDeviceByName must return the found device.
+        The getDeviceByName method must return the found device.
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
@@ -121,7 +122,7 @@ class TestDevMngr(TestCase):
     @patch('device.DeviceManager.Device')
     def test_getDeviceByIdxOutRange(self, mockedDevice):
         """
-        The getDeviceByIdx must raise an IndexError if the requested
+        The getDeviceByIdx method must raise an IndexError if the requested
         index is out of the range of the devices list.
         """
         mockedDevice.side_effect = self.mockDevs
@@ -145,7 +146,7 @@ class TestDevMngr(TestCase):
     @patch('device.DeviceManager.Device')
     def test_getDeviceCount(self, mockedDevice):
         """
-        The getDeviceCount must return the number of active devices.
+        The getDeviceCount method must return the number of active devices.
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
@@ -154,3 +155,20 @@ class TestDevMngr(TestCase):
             self.assertEqual(devCount, len(self.devices),
                              'DeviceManager getDevsCount failed to return'
                              'the number of active devices.')
+
+    @patch('device.DeviceManager.Device')
+    def test_getDevices(self, mockedDevice):
+        """
+        The getDevices method must return the list of active devices.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            deviceList = devMngr.getDevices()
+            self.assertEqual(len(deviceList), len(self.devices),
+                             'DeviceManager getDevices failed to return the'
+                             'list of active devices.')
+            for device in deviceList:
+                self.assertTrue(isinstance(device, Mock),
+                                'DeviceManager getDevices failed to return the'
+                                'list of active devices.')

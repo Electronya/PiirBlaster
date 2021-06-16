@@ -88,7 +88,7 @@ class DeviceManager:
             location:   The device location.
 
         Return:
-            The found device if successful, None otherwise.
+            The found device if successful, raise a LookupError otherwise.
         """
         print(f"finding {location}.{name}")
         filteredDev = filter(lambda device: device.getConfig()['name'] == name
@@ -107,7 +107,7 @@ class DeviceManager:
             devIdx:     The device index.
 
         Return:
-            The found device if successful, None otherwise.
+            The found device if successful, raise an IndexError otherwise.
         """
         return self.devices[devIdx]
 
