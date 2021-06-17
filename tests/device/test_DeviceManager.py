@@ -9,7 +9,7 @@ import sys
 sys.path.append(os.path.abspath('./src'))
 
 from device.DeviceManager import DeviceManager              # noqa: E402
-from exceptions import DeviceExists                         # noqa: E402
+from exceptions import DeviceNotFound, DeviceExists         # noqa: E402
 
 
 class TestDevMngr(TestCase):
@@ -93,18 +93,21 @@ class TestDevMngr(TestCase):
     @patch('device.DeviceManager.Device')
     def test_getDeviceByNameNotFound(self, mockedDevice):
         """
-        The getDeviceByName method must raise a LookupError when the requested
-        device is not found.
+        The getDeviceByName method must raise a DeviceNotFound when the
+        requested device is not found.
         """
         mockedDevice.side_effect = self.mockDevs
+        lookupName = 'prout'
+        lookupLocation = 'atlantic'
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
             devMngr = DeviceManager(logging, {})
-            with self.assertRaises(LookupError) as context:
-                devMngr.getDeviceByName('prout', 'atlantic')
-            self.assertTrue('unable to find device atlantic.prout'
+            with self.assertRaises(DeviceNotFound) as context:
+                devMngr.getDeviceByName(lookupName, lookupLocation)
+            print(str(context.exception))
+            self.assertTrue(f"device {lookupLocation}.{lookupName} not found"
                             in str(context.exception),
-                            'DeviceManager getDeviceByName failed to raise'
-                            'a LookupError when unable to find the device.')
+                            'DeviceManager getDeviceByName failed to raise '
+                            'a DeviceNotFound when unable to find the device.')
 
     @patch('device.DeviceManager.Device')
     def test_getDeviceByNameDevFound(self, mockedDevice):

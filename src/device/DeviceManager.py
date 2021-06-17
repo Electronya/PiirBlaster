@@ -2,7 +2,7 @@ import os
 import json
 
 from .Device import Device
-from exceptions import DeviceExists
+from exceptions import DeviceNotFound, DeviceExists
 
 
 class DeviceManager:
@@ -94,14 +94,13 @@ class DeviceManager:
         Raise:
             LookupError if the device does not exist.
         """
-        print(f"finding {location}.{name}")
         filteredDev = filter(lambda device: device.getConfig()['name'] == name
                              and device.getConfig()['location']
                              == location, self.devices)
         try:
             return next(filteredDev)
         except Exception:
-            raise LookupError(f"unable to find device {location}.{name}")
+            raise DeviceNotFound(name, location)
 
     def getDeviceByIdx(self, devIdx):
         """
