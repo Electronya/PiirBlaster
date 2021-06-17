@@ -2,6 +2,7 @@ import os
 import json
 
 from .Device import Device
+from exceptions import DeviceExists
 
 
 class DeviceManager:
@@ -88,7 +89,10 @@ class DeviceManager:
             location:   The device location.
 
         Return:
-            The found device if successful, raise a LookupError otherwise.
+            The found device if successful.
+
+        Raise:
+            LookupError if the device does not exist.
         """
         print(f"finding {location}.{name}")
         filteredDev = filter(lambda device: device.getConfig()['name'] == name
@@ -107,7 +111,10 @@ class DeviceManager:
             devIdx:     The device index.
 
         Return:
-            The found device if successful, raise an IndexError otherwise.
+            The found device if successful.
+
+        Raise:
+            IndexError if the index is out of range.
         """
         return self.devices[devIdx]
 
@@ -136,26 +143,18 @@ class DeviceManager:
         Params:
             newDevConfig:   The configuration of the new device.
 
-        Return:
-            The operation resuslt.
-        TODO: Use exception.
+        Raise:
+            DeviceExists if there is already a device with the same
+            name and location.
         """
-        devAlreadyExist = False
-        result = {'result': 'failed'}
-
         for device in self.devices:
             if device.getName() == newDevConfig['name'] \
                     and device.getLocation() == newDevConfig['location']:
-                devAlreadyExist = True
+                raise DeviceExists(newDevConfig['name'],
+                                   newDevConfig['location'])
 
-        if devAlreadyExist:
-            result['message'] = "Error: Device already exists!!"
-        else:
-            self.devices.append(Device(self.logger, self.appConfig,
-                                newDevConfig, isNew=True))
-            result['result'] = 'success'
-
-        return result
+        self.devices.append(Device(self.logger, self.appConfig,
+                            newDevConfig, isNew=True))
 
     def getDevsConfigList(self):
         """

@@ -9,6 +9,7 @@ import sys
 sys.path.append(os.path.abspath('./src'))
 
 from device.DeviceManager import DeviceManager              # noqa: E402
+from exceptions import DeviceExists                         # noqa: E402
 
 
 class TestDevMngr(TestCase):
@@ -28,6 +29,8 @@ class TestDevMngr(TestCase):
             mockedDev = Mock()
             mockedDev.loop_start.return_value = None
             mockedDev.loop_start.return_value = None
+            mockedDev.getName.return_value = device['name']
+            mockedDev.getLocation.return_value = device['location']
             mockedDev.getConfig.return_value = device
             self.mockDevs.append(mockedDev)
 
@@ -170,3 +173,61 @@ class TestDevMngr(TestCase):
                 self.assertTrue(isinstance(device, Mock),
                                 'DeviceManager getDevices failed to return the'
                                 'list of active devices.')
+
+    @patch('device.DeviceManager.Device')
+    def test_addDeviceAlreadyExist(self, mockedDevice):
+        """
+        The addDevice method must raise an DeviceExist error if a device with
+        the same location and name is already active.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            with self.assertRaises(DeviceExists) as context:
+                devMngr.addDevice(self.devices[0])
+            self.assertTrue(f"device {self.devices[0]['location']}."
+                            f"{self.devices[0]['name']}" in
+                            str(context.exception),
+                            'DeviceManager addDevice failed to raise a '
+                            'DeviceExists exception when there already an '
+                            'active device with the same name and location '
+                            'than the new one.')
+
+    @patch('device.DeviceManager.Device')
+    def test_addDeviceCreateDev(self, mockedDevice):
+        """
+        The addDevice method must create a new Device and add it
+        to the active list.
+        """
+        mockedDevConfig = {
+            'name': 'testDev4',
+            'location': 'testLocation4',
+            'linkedEmitter': 'OUT0',
+            'commandSet': {
+                'model': 'testModel4',
+                'manufacturer': 'testManufacturer4',
+                'Description': 'My test device 4',
+                'emitterGpio': 3,
+                'receiverGpio': 6,
+                'packetGap': 0.04
+            },
+            'topicPrefix': 'testPrefix4',
+            'lastWill': {
+                'qos': 2,
+                'retain': True
+            }
+        }
+        mockedDev = Mock()
+        mockedDev.loop_start.return_value = None
+        mockedDev.loop_start.return_value = None
+        self.mockDevs.append(mockedDev)
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            devMngr.addDevice(mockedDevConfig)
+            self.assertEqual(len(devMngr.devices), len(self.devices) + 1,
+                             'DeviceManager addDevice failed to create the '
+                             'new device and add it to the active list.')
+            self.assertTrue(devMngr.devices[-1] is mockedDev,
+                            'DeviceManager addDevice failed to create the '
+                            'new device and add it to the active list.')
