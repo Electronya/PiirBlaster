@@ -2,7 +2,7 @@ import os
 import json
 
 from .Device import Device
-from exceptions import DeviceNotFound, DeviceExists
+from exceptions import DeviceFileAccess, DeviceNotFound, DeviceExists
 
 
 class DeviceManager:
@@ -40,6 +40,8 @@ class DeviceManager:
         Params:
             logger:     The logging instance.
             appConfig:  The application configuration.
+
+        TODO: use exceptions
         """
         devsConfig = None
         self.appConfig = appConfig
@@ -173,12 +175,11 @@ class DeviceManager:
         """
         Save the active device configurations.
 
-        Return:
-            The result of the operation.
-        TODO: Use exception.
+        Raise:
+            DeviceFileAccess if the access to the device configuration file
+            failed.
         """
         devsConfig = []
-        result = {'result': 'failed'}
 
         for device in self.devices:
             devsConfig.append(device.getConfig())
@@ -188,11 +189,8 @@ class DeviceManager:
             with open(self.DEVICES_FILE) as devicesFile:
                 newContent = json.dumps(devsConfig, sort_keys=True, indent=2)
                 devicesFile.write(newContent)
-            result['result'] = self.SAVE_DEVS
-        except EnvironmentError:
-            result['message'] = self.ERR_SAVE_DEVS
-            self.logger.error(result['message'])
-        return result
+        except IOError:
+            raise DeviceFileAccess('unable to access device configuraion file')
 
     def listManufacturer(self):
         """

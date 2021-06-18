@@ -9,7 +9,8 @@ import sys
 sys.path.append(os.path.abspath('./src'))
 
 from device.DeviceManager import DeviceManager              # noqa: E402
-from exceptions import DeviceNotFound, DeviceExists         # noqa: E402
+from exceptions import DeviceFileAccess, DeviceNotFound, \
+    DeviceExists                                            # noqa: E402
 
 
 class TestDevMngr(TestCase):
@@ -34,6 +35,8 @@ class TestDevMngr(TestCase):
             mockedDev.getConfig.return_value = device
             self.mockDevs.append(mockedDev)
 
+    # TODO: Test when access fail.
+
     @patch('device.DeviceManager.Device')
     def test_constructorOpenDevsFile(self, mockedDevice):
         """
@@ -43,7 +46,8 @@ class TestDevMngr(TestCase):
         with patch('builtins.open',
                    mock_open(read_data=self.devicesStr)) as mockedFile:
             devMngr = DeviceManager(logging, {})                # noqa: F841
-            mockedFile.assert_called_with('./config/components/devices.json')
+            mockedFile.assert_called_once_with('./config/components/'
+                                               'devices.json')
 
     @patch('device.DeviceManager.Device')
     def test_constructorCreateDevs(self, mockedDevice):
@@ -234,3 +238,94 @@ class TestDevMngr(TestCase):
             self.assertTrue(devMngr.devices[-1] is mockedDev,
                             'DeviceManager addDevice failed to create the '
                             'new device and add it to the active list.')
+
+    @patch('device.DeviceManager.Device')
+    def test_saveDeviceGatterDevConfigs(self, mockedDevices):
+        """
+        The saveDevices method must gatter the configuration of
+        each active devices.
+        """
+        mockedDevices.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            devMngr.saveDevices()
+            for device in self.mockDevs:
+                device.getConfig.assert_called_once()
+
+    @patch('device.DeviceManager.Device')
+    def test_saveDevicesDevsFileError(self, mockedDevice):
+        """
+        The saveDevice method must raise a DeviceFileAccess error if
+        the access to the device configuration file generates errors.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)) \
+                as mockedFile, self.assertRaises(DeviceFileAccess) as context:
+            mockedFile.side_effect = IOError
+            devMngr.saveDevices()
+            self.assertTrue('unable to access device configuraion file'
+                            in str(context.exception),
+                            'DeviceManager saveDevices failed to raise a'
+                            'DeviceFileAccess exception when the access to'
+                            'the file failed.')
+
+    @patch('device.DeviceManager.Device')
+    def test_saveDevicesOpenDevsFile(self, mockedDevice):
+        """
+        The saveDevice method must open the device configuration file.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)) \
+                as mockedFile:
+            devMngr.saveDevices()
+            mockedFile.assert_called_once_with('./config/components'
+                                               '/devices.json')
+
+    @patch('device.DeviceManager.Device')
+    def test_saveDevicesWriteDevsConfig(self, mockedDevice):
+        """
+        The saveDevices must write the configuration of all the active
+        Device in the device configuration file.
+        """
+        mockedDevConfig = {
+            'name': 'testDev4',
+            'location': 'testLocation4',
+            'linkedEmitter': 'OUT0',
+            'commandSet': {
+                'model': 'testModel4',
+                'manufacturer': 'testManufacturer4',
+                'Description': 'My test device 4',
+                'emitterGpio': 3,
+                'receiverGpio': 6,
+                'packetGap': 0.04
+            },
+            'topicPrefix': 'testPrefix4',
+            'lastWill': {
+                'qos': 2,
+                'retain': True
+            }
+        }
+        mockedDev = Mock()
+        mockedDev.loop_start.return_value = None
+        mockedDev.loop_start.return_value = None
+        mockedDev.getConfig.return_value = mockedDevConfig
+        self.mockDevs.append(mockedDev)
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            devMngr.addDevice(mockedDevConfig)
+
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)) \
+                as mockedFile:
+            self.devices.append(mockedDevConfig)
+            devMngr.saveDevices()
+            mockedFile().write.assert_called_once_with(json
+                                                       .dumps(self.devices,
+                                                              sort_keys=True,
+                                                              indent=2))

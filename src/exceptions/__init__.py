@@ -1,3 +1,10 @@
+class DeviceFileAccess(Exception):
+    """
+    Exception raise when access to the device file generate errors.
+    """
+    pass
+
+
 class DeviceNotFound(Exception):
     """
     Exception raise when no device corresponding to the search
