@@ -35,7 +35,22 @@ class TestDevMngr(TestCase):
             mockedDev.getConfig.return_value = device
             self.mockDevs.append(mockedDev)
 
-    # TODO: Test when access fail.
+    @patch('device.DeviceManager.Device')
+    def test_constructorDevsFileError(self, mockedDevice):
+        """
+        The constructor must raise a DeviceFileAccess errror if
+        access to the device configurations file failed.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)) \
+                as mockedFile, self.assertRaises(DeviceFileAccess) as context:
+            mockedFile.side_effect = OSError
+            devMngr = DeviceManager(logging, {})                # noqa: F841
+            self.assertTrue('unable to access device configuraion file'
+                            in str(context.exception),
+                            'DeviceManager failed to raise a DeviceFileAccess '
+                            'exception when access to the device '
+                            'configurations access failed.')
 
     @patch('device.DeviceManager.Device')
     def test_constructorOpenDevsFile(self, mockedDevice):
@@ -240,7 +255,7 @@ class TestDevMngr(TestCase):
                             'new device and add it to the active list.')
 
     @patch('device.DeviceManager.Device')
-    def test_saveDeviceGatterDevConfigs(self, mockedDevices):
+    def test_saveDevicesGatterDevConfigs(self, mockedDevices):
         """
         The saveDevices method must gatter the configuration of
         each active devices.
@@ -264,7 +279,7 @@ class TestDevMngr(TestCase):
 
         with patch('builtins.open', mock_open(read_data=self.devicesStr)) \
                 as mockedFile, self.assertRaises(DeviceFileAccess) as context:
-            mockedFile.side_effect = IOError
+            mockedFile.side_effect = OSError
             devMngr.saveDevices()
             self.assertTrue('unable to access device configuraion file'
                             in str(context.exception),

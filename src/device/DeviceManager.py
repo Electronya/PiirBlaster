@@ -49,9 +49,11 @@ class DeviceManager:
         self.logger.info('Loading devices')
         self.devices = []
 
-        # Loading devices
-        with open(self.DEVICES_FILE) as devicesFile:
-            devsConfig = json.loads(devicesFile.read())
+        try:
+            with open(self.DEVICES_FILE) as devicesFile:
+                devsConfig = json.loads(devicesFile.read())
+        except Exception:
+            raise DeviceFileAccess('unable to access device configuraion file')
 
         for devConfig in devsConfig:
             self.devices.append(Device(logger, appConfig, devConfig))
@@ -179,17 +181,14 @@ class DeviceManager:
             DeviceFileAccess if the access to the device configuration file
             failed.
         """
-        devsConfig = []
-
-        for device in self.devices:
-            devsConfig.append(device.getConfig())
+        devsConfig = self.getDevsConfigList()
 
         self.logger.info('Saving devices')
         try:
             with open(self.DEVICES_FILE) as devicesFile:
                 newContent = json.dumps(devsConfig, sort_keys=True, indent=2)
                 devicesFile.write(newContent)
-        except IOError:
+        except Exception:
             raise DeviceFileAccess('unable to access device configuraion file')
 
     def listManufacturer(self):
