@@ -47,6 +47,14 @@ class TestDevMngr(TestCase):
                                            'cmdSetTosh2.json')),
         ]
 
+        self.mockedSecCmdsets = [('./commandSets/samsung', (),
+                                 ('cmdSetSEC1.json',
+                                  'cmdsetSEC2.json',
+                                  'cmdSetSEC3.json'))]
+
+        self.mockedToshCmdSets = [('./commandSets/tochiba', (),
+                                  ('cmdSetTosh1.json', 'cmdSetTosh2.json'))]
+
     @patch('device.DeviceManager.Device')
     def test_constructorDevsFileError(self, mockedDevice):
         """
@@ -388,3 +396,49 @@ class TestDevMngr(TestCase):
                              self.mockedCmdSetsDir[0][1],
                              'DeviceManager listManufacturer failed to '
                              'return the list of manufacturer.')
+
+    @patch('device.DeviceManager.Device')
+    def test_listCommandSetsWalkManufDir(self, mockedDevice):
+        """
+        The listCommandSets must walk the passed manufacturer subdirectory.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+
+        with patch('os.walk') as mockedWalk:
+            devMngr.listCommandSets('sony')
+            mockedWalk.assert_called_with('./commandSets/sony')
+
+    @patch('device.DeviceManager.Device')
+    def test_listCommandSetsReturn(self, mockedDevice):
+        """
+        The listCommandSets must return the list of command sets for a given
+        manufacturer.
+        """
+        secCmdSets = []
+        for cmdSet in self.mockedSecCmdsets[0][2]:
+            secCmdSets.append(cmdSet[:-5])
+
+        toshCmdSets = []
+        for cmdSet in self.mockedToshCmdSets[0][2]:
+            toshCmdSets.append(cmdSet[:-5])
+
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+
+        with patch('os.walk') as mockedWalk:
+            mockedWalk.return_value = self.mockedSecCmdsets
+            resultCmdSets = devMngr.listCommandSets('samsung')
+            self.assertEqual(resultCmdSets, secCmdSets,
+                             'DeviceManager listCommandSets failed to return '
+                             'the list of command sets for a given '
+                             'manufacturer.')
+
+            mockedWalk.return_value = self.mockedToshCmdSets
+            resultCmdSets = devMngr.listCommandSets('toshiba')
+            self.assertEqual(resultCmdSets, toshCmdSets,
+                             'DeviceManager listCommandSets failed to return '
+                             'the list of command sets for a given '
+                             'manufacturer.')

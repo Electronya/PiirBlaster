@@ -209,8 +209,7 @@ class DeviceManager:
         Get the list of currently supported command set for a manufacturer.
 
         Return:
-            The list fo currently supported command set for the manufacturer.
-        TODO: Use exception.
+            The list of currently supported command set for the manufacturer.
         """
         cmdSets = []
         for r, d, f in os.walk(os.path.join('./commandSets', manufacturer)):
