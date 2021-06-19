@@ -197,7 +197,6 @@ class DeviceManager:
 
         Return:
             The list of currently supported manufacturer.
-        TODO: Use exception.
         """
         manufacturers = []
         for r, d, f in os.walk('./commandSets'):

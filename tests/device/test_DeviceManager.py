@@ -35,6 +35,18 @@ class TestDevMngr(TestCase):
             mockedDev.getConfig.return_value = device
             self.mockDevs.append(mockedDev)
 
+        self.mockedCmdSetsDir = [
+            ('./commandSets', ('jvc', 'samsung', 'sony', 'toshiba'), ()),
+            ('./commandSets/jvc', (), ('cmdSetJVC1.json', 'cmdSetJVC2.json')),
+            ('./commandSets/samsung', (), ('cmdSetSEC1.json',
+                                           'cmdsetSEC2.json',
+                                           'cmdSetSEC3.json')),
+            ('./commandSets/sony', (), ('cmdSetSony1.json',
+                                        'cmdSetSony2.json')),
+            ('./commandSets/tochiba', (), ('cmdSetTosh1.json',
+                                           'cmdSetTosh2.json')),
+        ]
+
     @patch('device.DeviceManager.Device')
     def test_constructorDevsFileError(self, mockedDevice):
         """
@@ -283,8 +295,8 @@ class TestDevMngr(TestCase):
             devMngr.saveDevices()
             self.assertTrue('unable to access device configuraion file'
                             in str(context.exception),
-                            'DeviceManager saveDevices failed to raise a'
-                            'DeviceFileAccess exception when the access to'
+                            'DeviceManager saveDevices failed to raise a '
+                            'DeviceFileAccess exception when the access to '
                             'the file failed.')
 
     @patch('device.DeviceManager.Device')
@@ -344,3 +356,35 @@ class TestDevMngr(TestCase):
                                                        .dumps(self.devices,
                                                               sort_keys=True,
                                                               indent=2))
+
+    @patch('device.DeviceManager.Device')
+    def test_listManufacturerWalkCmdSetsDir(self, mockedDevice):
+        """
+        The listManufacturer method must walk the command sets directory
+        to identify the supported manufacturer.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+
+        with patch('os.walk') as mockedWalk:
+            devMngr.listManufacturer()
+            mockedWalk.assert_called_with('./commandSets')
+
+    @patch('device.DeviceManager.Device')
+    def test_listManufacturerReturn(self, mockedDevice):
+        """
+        The listManufacturer method must return the list of
+        supported manufacturer.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+
+        with patch('os.walk') as mockedWalk:
+            mockedWalk.return_value = self.mockedCmdSetsDir
+            resultManufacturer = devMngr.listManufacturer()
+            self.assertEqual(tuple(resultManufacturer),
+                             self.mockedCmdSetsDir[0][1],
+                             'DeviceManager listManufacturer failed to '
+                             'return the list of manufacturer.')
