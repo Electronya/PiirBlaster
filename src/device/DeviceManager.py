@@ -41,7 +41,9 @@ class DeviceManager:
             logger:     The logging instance.
             appConfig:  The application configuration.
 
-        TODO: use exceptions
+        Raise:
+            DeviceFileAccess if the access to the device configurations file
+            failed.
         """
         devsConfig = None
         self.appConfig = appConfig
