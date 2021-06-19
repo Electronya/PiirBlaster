@@ -1,0 +1,56 @@
+[
+    {
+        "name": "testDev1",
+        "location": "testLocation1",
+        "linkedEmitter": "OUT0",
+        "commandSet": {
+            "model": "testModel1",
+            "manufacturer": "testManufacturer1",
+            "Description": "My test device 1",
+            "emitterGpio": 22,
+            "receiverGpio": 11,
+            "packetGap": 0.01
+        },
+        "topicPrefix": "testPrefix1",
+        "lastWill": {
+            "qos": 1,
+            "retain": true
+        }
+    },
+    {
+        "name": "testDev2",
+        "location": "testLocation2",
+        "linkedEmitter": "OUT0",
+        "commandSet": {
+            "model": "testModel2",
+            "manufacturer": "testManufacturer2",
+            "Description": "My test device 2",
+            "emitterGpio": 12,
+            "receiverGpio": 13,
+            "packetGap": 0.02
+        },
+        "topicPrefix": "testPrefix2",
+        "lastWill": {
+            "qos": 2,
+            "retain": true
+        }
+    },
+    {
+        "name": "testDev3",
+        "location": "testLocation3",
+        "linkedEmitter": "OUT0",
+        "commandSet": {
+            "model": "testModel3",
+            "manufacturer": "testManufacturer3",
+            "Description": "My test device 3",
+            "emitterGpio": 9,
+            "receiverGpio": 7,
+            "packetGap": 0.03
+        },
+        "topicPrefix": "testPrefix3",
+        "lastWill": {
+            "qos": 2,
+            "retain": true
+        }
+    }
+]

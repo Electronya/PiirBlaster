@@ -1,7 +1,7 @@
 import sys
 
 from config import Config
-from device import DeviceManager
+from device.DeviceManager import DeviceManager
 from logger import initLogger
 
 
