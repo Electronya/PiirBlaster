@@ -371,3 +371,31 @@ class TestDevice(TestCase):
                         self.deviceConfig, isNew=True)
         device._on_log(None, None, mqtt.MQTT_LOG_INFO, None)
         self.assertTrue(True)
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_startLoop(self, mockedClient, mockedCmdSet):
+        """
+        The startLoop method must start the client network loop.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device.startLoop()
+        self.mockedClient.loop_start.assert_called_once()
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_stopLoop(self, mockedClient, mockedCmdSet):
+        """
+        The stopLoop method must stop the client network loop
+        and disconnect the client.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device.stopLoop()
+        self.mockedClient.loop_stop.assert_called_once()
+        self.mockedClient.disconnect.assert_called_once()
