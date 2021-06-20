@@ -268,6 +268,11 @@ class TestDevice(TestCase):
         """
         The _on_disconnect method does not do much.
         """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device._on_disconnect(None, None, None)
         self.assertTrue(True)
 
     @patch('device.Device.CommandSet')
@@ -327,3 +332,42 @@ class TestDevice(TestCase):
                         self.deviceConfig, isNew=True)
         device._on_message(None, None, msg)
         mockedPubCmdResult.assert_called_once_with(True)
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__on_publish(self, mockedClient, mockedCmdSet):
+        """
+        The _on_publish method does not do much.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device._on_publish(None, None, None)
+        self.assertTrue(True)
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__on_subscribe(self, mockedClient, mockedCmdSet):
+        """
+        The _on_subscribe method does not do much.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device._on_subscribe(None, None, None, None)
+        self.assertTrue(True)
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__on_log(self, mockedClient, mockedCmdSet):
+        """
+        The _on_log method does not do much.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device._on_log(None, None, mqtt.MQTT_LOG_INFO, None)
+        self.assertTrue(True)
