@@ -162,7 +162,7 @@ class TestDevice(TestCase):
         mockedCmdSet.side_effect = [self.mockedCmdSet]
         device = Device(logging, self.mockedAppConfig,
                         self.deviceConfig)
-        willTopic = f"{device.baseTopic}{device.STATUS_TOPIC}"
+        willTopic = f"{self.deviceConfig['topicPrefix']}/{self.deviceConfig['location']}/{self.deviceConfig['name']}/{device.STATUS_TOPIC}"     # noqa: E501
         qos = self.deviceConfig['lastWill']['qos']
         retain = self.deviceConfig['lastWill']['retain']
         self.mockedClient.will_set.assert_called_once_with(willTopic,

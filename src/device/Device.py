@@ -46,8 +46,7 @@ class Device():
             self.commandSet = CommandSet.load(os.path.join('./commandSets',
                                               manufacturer, f"{model}.json"))
 
-        self.baseTopic = f"{self.config['topicPrefix']}/"
-        f"{self.config['location']}/{self.config['name']}/"
+        self.baseTopic = f"{self.config['topicPrefix']}/{self.config['location']}/{self.config['name']}/"   # noqa: E501
 
         self._initMqttClient(appConfig.getUserName(),
                              appConfig.getUserPassword(),
