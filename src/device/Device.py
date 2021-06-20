@@ -144,14 +144,18 @@ class Device():
             usrData:        User data.
             msg:            The message data.
         """
+        reuslt = True
         receivedMsg = msg.payload.decode('utf-8')
         self.logger.info(f"Message recieved {receivedMsg}")
-        for i in range(0, 4):
-            self.logger.debug(f"Sending packet #{i}")
-            # TODO: Manage unsupported command
-            gap = self.config['commandSet']['packetGap']
-            self.commandSet.emit(receivedMsg, emit_gap=gap)
-        self._publishCmdResult(True)
+        try:
+            for i in range(0, 4):
+                self.logger.debug(f"Sending packet #{i}")
+                # TODO: Manage unsupported command
+                gap = self.config['commandSet']['packetGap']
+                self.commandSet.emit(receivedMsg, emit_gap=gap)
+        except KeyError:
+            reuslt = False
+        self._publishCmdResult(reuslt)
 
     def _on_publish(self, client, usrData, mid):
         """
