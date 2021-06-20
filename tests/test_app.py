@@ -14,7 +14,7 @@ class TestApp(TestCase):
     """
     @patch('app.Config')
     @patch('app.DeviceManager')
-    def test_conctructorLoadConfig(self, mockedConfig, mockedDevMngr):
+    def test_conctructorLoadConfig(self, mockedDevMngr, mockedConfig):
         """
         The constructor must load the configuration by creating a new
         instance of the Config object.
@@ -25,7 +25,7 @@ class TestApp(TestCase):
 
     @patch('app.Config')
     @patch('app.DeviceManager')
-    def test_constructorLoadDevMngr(self, mockedConfig, mockedDevMngr):
+    def test_constructorLoadDevMngr(self, mockedDevMngr, mockedConfig):
         """
         The contructor must load the active devices by instanciating a new
         instance of the DeviceManager.
@@ -36,7 +36,7 @@ class TestApp(TestCase):
 
     @patch('app.Config')
     @patch('app.DeviceManager')
-    def test_runStartDeviceLoops(self, mockedConfig, mockedDevMngr):
+    def test_runStartDeviceLoops(self, mockedDevMngr, mockedConfig):
         """
         The App run method must start the nertwork loop of the active
         devices by calling the device manager startLoops method.
@@ -51,7 +51,7 @@ class TestApp(TestCase):
 
     @patch('app.Config')
     @patch('app.DeviceManager')
-    def test_stopStopDeviceLoops(self, mockedConfig, mockedDevMngr):
+    def test_stopStopDeviceLoops(self, mockedDevMngr, mockedConfig):
         """
         The App stop method must stop the nertwork loop of the active
         devices by calling the device manager stopLoops method.
