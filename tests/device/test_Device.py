@@ -231,3 +231,32 @@ class TestDevice(TestCase):
         device._publishCmdResult(False)
         topic = f"{self.baseTopic}{device.RESULT_TOPIC}"
         self.mockedClient.publish.assert_called_once_with(topic, payload=device.ERROR_MSG)    # noqa: E501
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__on_connectPublishStatus(self, mockedClient, mockedCmdSet):
+        """
+        The _on_connect method must pubish the online status of the device.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig)
+        device._on_connect(None, None, None, None)
+        topic = f"{self.baseTopic}{device.STATUS_TOPIC}"
+        self.mockedClient.publish.assert_called_once_with(topic, payload=device.ONLINE_MSG,     # noqa: E501
+                                                          qos=1, retain=True)                   # noqa: E501
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__on_connectSubscribeCmd(self, mockedClient, mockedCmdSet):
+        """
+        The _on_connect method must subscribe to the command topic.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig)
+        device._on_connect(None, None, None, None)
+        topic = f"{self.baseTopic}{device.CMD_TOPIC}"
+        self.mockedClient.subscribe.assert_called_once_with(topic)
