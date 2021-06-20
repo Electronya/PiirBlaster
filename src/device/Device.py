@@ -232,16 +232,6 @@ class Device():
         """
         return self.config['location']
 
-    def setConfig(self, config):
-        """
-        Set the device configuration.
-
-        Params:
-            config:         The device configuration.
-        """
-        self.logger.debug(f"Setting device config to {config}")
-        self.config = config
-
     def getConfig(self):
         """
         Get the device configuration.
@@ -252,6 +242,16 @@ class Device():
         self.logger.debug('Getting device config')
         return self.config
 
+    def setConfig(self, config):
+        """
+        Set the device configuration.
+
+        Params:
+            config:         The device configuration.
+        """
+        self.logger.debug(f"Setting device config to {config}")
+        self.config = config
+
     def getCommandList(self):
         """
         Get the device command list.
@@ -260,7 +260,8 @@ class Device():
             The device command list.
         """
         self.logger.debug('Getting command list')
-        return self.commandSet.to_json()
+        cmdSetJson = self.commandSet.to_json()
+        return cmdSetJson['commands'].keys()
 
     def addCommand(self, command, description):
         """"

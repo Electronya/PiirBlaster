@@ -1,4 +1,3 @@
-import json
 import logging
 from unittest import TestCase
 from unittest.mock import Mock, patch
@@ -399,3 +398,129 @@ class TestDevice(TestCase):
         device.stopLoop()
         self.mockedClient.loop_stop.assert_called_once()
         self.mockedClient.disconnect.assert_called_once()
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_getName(self, mockedClient, mockedCmdSet):
+        """
+        The getName method must return the name of the device.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        name = device.getName()
+        self.assertEqual(name, self.deviceConfig['name'],
+                         'Device getName failed to return the'
+                         'device name.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_getLocation(self, mockedClient, mockedCmdSet):
+        """
+        The getLocation method must return the location of the device.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        location = device.getLocation()
+        self.assertEqual(location, self.deviceConfig['location'],
+                         'Device getLocation failed to return the'
+                         'device location.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_getConfig(self, mockedClient, mockedCmdSet):
+        """
+        The getConfig method must return the configuration of the device.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        configuration = device.getConfig()
+        self.assertEqual(configuration, self.deviceConfig,
+                         'Device getConfig failed to return the'
+                         'device configuration.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_setConfig(self, mockedClient, mockedCmdSet):
+        """
+        The setConfig method must update the configuration of the device.
+        """
+        newConfig = {
+            'name': 'newDev',
+            'location': 'newLocation',
+            'linkedEmitter': 'OUT0',
+            'commandSet': {
+                'model': 'newModel',
+                'manufacturer': 'newManufacturer',
+                'description': 'My new device ',
+                'emitterGpio': 3,
+                'receiverGpio': 6,
+                'packetGap': 0.01
+            },
+            'topicPrefix': 'newPrefix',
+            'lastWill': {
+                'qos': 2,
+                'retain': True
+            }
+        }
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device.setConfig(newConfig)
+        configuration = device.getConfig()
+        self.assertEqual(configuration, newConfig,
+                         'Device setConfig failed to return the'
+                         'device configuration.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_getCommandList(self, mockedClient, mockedCmdSet):
+        """
+        The getCommandList method must return the list of command
+        supported by the device.
+        """
+        cmdSetJson = {
+            "type": "CommandSet",
+            "name": "rm-s103",
+            "emitter_gpio": 22,
+            "receiver_gpio": 11,
+            "commands": {
+                "power": {},
+                "volumeUp": {},
+                "volumeDown": {},
+                "channelUp": {},
+                "channelDown": {}
+            }
+        }
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        self.mockedCmdSet.to_json.return_value = cmdSetJson
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        commandList = device.getCommandList()
+        self.assertEqual(commandList, cmdSetJson['commands'].keys(),
+                         'Device getCommandList failed to return the device'
+                         'supported command list.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_addCommandCmdSetAdd(self, mockedClient, mockedCmdSet):
+        """
+        The addCommand method must call the add method of the command set
+        with the new command name and derscription.
+        """
+        newCmdName = 'new command'
+        newCmdDescription = 'description of new command'
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device.addCommand(newCmdName, newCmdDescription)
+        self.mockedCmdSet.add.assert_called_once_with(newCmdName,
+                                                      description=newCmdDescription)    # noqa: E501
