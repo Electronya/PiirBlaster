@@ -4,7 +4,7 @@ from ircodec.command import CommandSet
 import os
 
 
-class Device(mqtt.Client):
+class Device():
     # Constants
     STATUS_TOPIC = 'status'
     CMD_TOPIC = 'command'
@@ -15,17 +15,23 @@ class Device(mqtt.Client):
     SUCCESS_MSG = 'done'
     ERROR_MSG = 'unsupported'
 
-    # Constructor
     def __init__(self, logger, appConfig, devConfig, isNew=False):
-        super().__init__(client_id=f"{devConfig['location']}."
-                         f"{devConfig['name']}")
+        """
+        Constructor.
+
+        Params:
+            logger:         The logger.
+            appConfig:      The application configuration.
+            devConfig:      The device configuration.
+            isNew:          The flag indicating if the device is a new one,
+                            or an existing commande set exists.
+        """
         self.config = devConfig
         self.logger = logger.getLogger(f"{devConfig['location']}."
                                        f"{devConfig['name']}")
 
         if isNew:
             self.logger.info('Creating new device')
-
             emitter = self.config['commandSet']['emitterGpio']
             receiver = self.config['commandSet']['receiverGpio']
             description = self.config['commandSet']['description']
@@ -34,7 +40,6 @@ class Device(mqtt.Client):
                                          description=description)
         else:
             self.logger.info('Loading existing device')
-
             manufacturer = self.config['commandSet']['manufacturer']
             model = self.config['commandSet']['model']
             self.commandSet = CommandSet.load(os.path.join('./commandSets',
@@ -45,59 +50,99 @@ class Device(mqtt.Client):
         self._initMqttClient(appConfig.getUserName(),
                              appConfig.getUserPassword(),
                              appConfig.getBrokerHostname(),
-                             appConfig.getBrokerPort(),
-                             self.config['lastWill'])
+                             appConfig.getBrokerPort())
 
-    # Init device mqtt client
     def _initMqttClient(self, userName, userPassword,
-                        brokerIp, brokerPort, lastWill):
-        willTopic = self.baseTopic + self.STATUS_TOPIC
+                        brokerIp, brokerPort):
+        """
+        Initialize the MQTT client.
 
-        # Set client settings
-        self.will_set(willTopic, self.OFFLINE_MSG,
-                      lastWill['qos'], lastWill['retain'])
-        self.username_pw_set(userName, userPassword)
+        Params:
+            userName:           The user name for connecting to the broker.
+            userPassword:       The user password for connecting to the broker.
+            brokerHostname:     The broker hostname.
+            brokerPort:         The broker port.
+        """
+        self.client = mqtt.Client(client_id=f"{self.config['location']}."
+                                  f"{self.config['name']}")
+        self.client.on_connect = self._on_connect
+        self.client.on_disconnect = self._on_disconnect
+        self.client.on_message = self._on_message
+        self.client.on_publish = self._on_publish
+        self.client.on_subscribe = self._on_subscribe
+        self.client.on_log = self._on_log
+
+        willTopic = self.baseTopic + self.STATUS_TOPIC
+        self.client.will_set(willTopic, self.OFFLINE_MSG,
+                             self.config['lastWill']['qos'],
+                             self.config['lastWill']['retain'])
+        self.client.username_pw_set(userName, userPassword)
         # TODO: Implement switch for secure or not.
-        # self.tls_set()
-        # self.tls_insecure_set(True)
+        # self.client.tls_set()
+        # self.client.tls_insecure_set(True)
 
         self.logger.info(f"Connecting to {brokerIp}:{brokerPort}")
         self.logger.debug(f"Connecting as {userName} with password "
                           f"{userPassword}")
+        self.client.connect(brokerIp, port=brokerPort)
 
-        # Connect to broker
-        self.connect(brokerIp, port=brokerPort)
-
-    # Publish command result
     def _publishCmdResult(self, success):
+        """
+        Publish a command result.
+
+        Params:
+            success:            The flag indicating to send success
+                                or fail result.
+        """
         resultTopic = self.baseTopic + self.RESULT_TOPIC
         if success:
             self.logger.info('Command sent')
-            self.publish(resultTopic, payload=self.SUCCESS_MSG)
+            self.client.publish(resultTopic, payload=self.SUCCESS_MSG)
         else:
             self.logger.warning('Command unsupported')
-            self.publish(resultTopic, payload=self.ERROR_MSG)
+            self.client.publish(resultTopic, payload=self.ERROR_MSG)
 
-    # On connection
-    def on_connect(self, client, usrData, flags, rc):
+    def _on_connect(self, client, usrData, flags, rc):
+        """
+        The on connect callback.
+
+        Params:
+            client:         The mqtt client.
+            usrData:        User data.
+            flags:          The connection flags.
+            rc:             The connection result.
+        """
         self.logger.info('Connected')
         self.logger.debug(f"rc {rc}")
-
-        # Publish ONLINE status
         statusTopic = self.baseTopic + self.STATUS_TOPIC
-        self.publish(statusTopic, payload=self.ONLINE_MSG, qos=1, retain=True)
+        self.client.publish(statusTopic, payload=self.ONLINE_MSG,
+                            qos=1, retain=True)
 
-        # Subscribing to command topic
         cmdTopic = self.baseTopic + self.CMD_TOPIC
-        self.subscribe(cmdTopic)
+        self.client.subscribe(cmdTopic)
 
-    # On disconnect
-    def on_disconnect(self, client, usrData, rc):
+    def _on_disconnect(self, client, usrData, rc):
+        """
+        The on disconnect callback.
+
+        Params:
+            client:         The mqtt client.
+            usrData:        User data.
+            flags:          The connection flags.
+            rc:             The connection result.
+        """
         self.logger.info('Disconnected')
         self.logger.debug(f"rc {rc}")
 
-    # On message
-    def on_message(self, client, usrData, msg):
+    def _on_message(self, client, usrData, msg):
+        """
+        The on message callback.
+
+        Params:
+            client:         The mqtt client.
+            usrData:        User data.
+            msg:            The message data.
+        """
         receivedMsg = msg.payload.decode('utf-8')
         self.logger.info(f"Message recieved {receivedMsg}")
         for i in range(0, 4):
@@ -107,18 +152,41 @@ class Device(mqtt.Client):
             self.commandSet.emit(receivedMsg, emit_gap=gap)
         self._publishCmdResult(True)
 
-    # On publish
-    def on_publish(self, client, usrData, mid):
+    def _on_publish(self, client, usrData, mid):
+        """
+        The on publish callback.
+
+        Params:
+            client:         The mqtt client.
+            usrData:        User data.
+            mid:            The message ID that have been published.
+        """
         self.logger.info('Message published')
         self.logger.debug(f"mid {mid}")
 
-    # On subscribe
-    def on_subscribe(self, client, usrData, mid, grantedQoS):
+    def _on_subscribe(self, client, usrData, mid, grantedQoS):
+        """
+        The on subscribe callback.
+
+        Params:
+            client:         The mqtt client.
+            usrData:        User data.
+            mid:            The message ID that have been published.
+            grantedQoS:     The granted QoS for the subcription.
+        """
         self.logger.info(f"Subscibed with QoS {grantedQoS}")
         self.logger.debug(f"mid {mid}")
 
-    # On log
-    def on_log(self, client, usrData, logLevel, logMsg):
+    def _on_log(self, client, usrData, logLevel, logMsg):
+        """
+        The on log callback.
+
+        Params:
+            client:         The mqtt client.
+            usrData:        User data.
+            logLevel:       The level of the log message.
+            logMsg:         The log message.
+        """
         switcher = {
             mqtt.MQTT_LOG_INFO: self.logger.info,
             mqtt.MQTT_LOG_NOTICE: self.logger.info,
@@ -127,6 +195,19 @@ class Device(mqtt.Client):
             mqtt.MQTT_LOG_DEBUG: self.logger.debug,
         }
         switcher[logLevel](logMsg)
+
+    def startLoop(self):
+        """
+        Start the network loop.
+        """
+        self.client.loop_start()
+
+    def stopLoop(self):
+        """
+        Stop the network loop.
+        """
+        self.client.loop_stop()
+        self.client.disconnect()
 
     # Get device name
     def getName(self):
@@ -145,6 +226,8 @@ class Device(mqtt.Client):
     def getConfig(self):
         self.logger.debug('Getting device config')
         return self.config
+
+
 
     # Get command list
     def getCommandList(self):
