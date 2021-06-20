@@ -32,10 +32,11 @@ class Device():
 
         if isNew:
             self.logger.info('Creating new device')
+            name = self.config['commandSet']['model']
             emitter = self.config['commandSet']['emitterGpio']
             receiver = self.config['commandSet']['receiverGpio']
             description = self.config['commandSet']['description']
-            self.commandSet = CommandSet(emitter_gpio=emitter,
+            self.commandSet = CommandSet(name, emitter_gpio=emitter,
                                          receiver_gpio=receiver,
                                          description=description)
         else:
@@ -45,7 +46,8 @@ class Device():
             self.commandSet = CommandSet.load(os.path.join('./commandSets',
                                               manufacturer, f"{model}.json"))
 
-        self.baseTopic = f"{self.config['topicPrefix']}/{self.config['location']}/{self.config['name']}/"   # noqa: E501
+        self.baseTopic = f"{self.config['topicPrefix']}/"
+        f"{self.config['location']}/{self.config['name']}/"
 
         self._initMqttClient(appConfig.getUserName(),
                              appConfig.getUserPassword(),
@@ -209,43 +211,81 @@ class Device():
         self.client.loop_stop()
         self.client.disconnect()
 
-    # Get device name
     def getName(self):
+        """
+        Get the device name.
+
+        Return:
+            The device name.
+        """
         return self.config['name']
 
-    # Get device location
     def getLocation(self):
+        """
+        Get the device location,
+
+        Return:
+            The device location.
+        """
         return self.config['location']
 
-    # Set device config
     def setConfig(self, config):
+        """
+        Set the device configuration.
+
+        Params:
+            config:         The device configuration.
+        """
         self.logger.debug(f"Setting device config to {config}")
         self.config = config
 
-    # Get device config
     def getConfig(self):
+        """
+        Get the device configuration.
+
+        Return:
+            The device configuration.
+        """
         self.logger.debug('Getting device config')
         return self.config
 
-
-
-    # Get command list
     def getCommandList(self):
+        """
+        Get the device command list.
+
+        Return:
+            The device command list.
+        """
         self.logger.debug('Getting command list')
         return self.commandSet.to_json()
 
-    # Add a command
     def addCommand(self, command, description):
+        """"
+        Add a command to the device.
+
+        Params:
+            command:            The command name.
+            description:        The command description.
+        """
         self.logger.debug(f"Adding command {command} to command set")
         self.commandSet.add(command, description=description)
 
-    # Delete a command
     def deleteCommand(self, command):
+        """
+        Delete a command from the device.
+
+        Params:
+            command:            The command name.
+        TODO: exception
+        """
         self.logger.debug(f"Deleting command {command} from command set")
         self.commandSet.remove(command)
 
-    # Save device command set
     def saveCommandSet(self):
+        """
+        Save the device command set.
+        TODO: exception
+        """
         result = {'result': 'failed'}
         try:
             self.commandSet.save_as(os.path.join('./commandSets',
