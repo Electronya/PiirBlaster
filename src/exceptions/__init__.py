@@ -35,3 +35,18 @@ class DeviceExists(Exception):
             location:   The device location that already exists.
         """
         super().__init__(f"device {location}.{name} already exists.")
+
+
+class CommandNotFound(Exception):
+    """
+    Exception raise when no command corresponding to the seach
+    was found.
+    """
+    def __init__(self, command):
+        """
+        Constructor.
+
+        Params:
+            command:    The name of the command that was not found.
+        """
+        super().__init__(f"command {command} not supported.")

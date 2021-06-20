@@ -3,6 +3,8 @@ from ircodec.command import CommandSet
 
 import os
 
+from exceptions import CommandNotFound
+
 
 class Device():
     # Constants
@@ -150,7 +152,6 @@ class Device():
         try:
             for i in range(0, 4):
                 self.logger.debug(f"Sending packet #{i}")
-                # TODO: Manage unsupported command
                 gap = self.config['commandSet']['packetGap']
                 self.commandSet.emit(receivedMsg, emit_gap=gap)
         except KeyError:
@@ -280,10 +281,15 @@ class Device():
 
         Params:
             command:            The command name.
-        TODO: exception
+
+        Raise:
+            CommandNotFound if the requested command is not supported.
         """
         self.logger.debug(f"Deleting command {command} from command set")
-        self.commandSet.remove(command)
+        try:
+            self.commandSet.remove(command)
+        except KeyError:
+            raise CommandNotFound(command)
 
     def saveCommandSet(self):
         """
@@ -293,6 +299,7 @@ class Device():
         result = {'result': 'failed'}
         try:
             self.commandSet.save_as(os.path.join('./commandSets',
+                                    self.config['commandSet']['manufacturer'],
                                     f"{self.config['commandSet']}.json"))
             result['result'] = 'success'
         except EnvironmentError:

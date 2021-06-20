@@ -11,8 +11,7 @@ sys.path.append(os.path.abspath('./src'))
 
 from config import Config                                   # noqa: E402
 from device.Device import Device                            # noqa: E402
-from exceptions import DeviceFileAccess, DeviceNotFound, \
-    DeviceExists                                            # noqa: E402
+from exceptions import CommandNotFound                      # noqa: E402
 
 
 class TestDevice(TestCase):
@@ -524,3 +523,38 @@ class TestDevice(TestCase):
         device.addCommand(newCmdName, newCmdDescription)
         self.mockedCmdSet.add.assert_called_once_with(newCmdName,
                                                       description=newCmdDescription)    # noqa: E501
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_deleteCommandCmdNotFound(self, mockedClient, mockedCmdSet):
+        """
+        The deleteCommand must raise a CommandNotFound error if the command to
+        be deleted is not supported.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        commandName = 'not supported command'
+        self.mockedCmdSet.remove.side_effect = KeyError()
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        with self.assertRaises(CommandNotFound) as context:
+            device.deleteCommand(commandName)
+            self.assertTrue(f"command {commandName} not supported."
+                            in str(context.exception),
+                            'Device deleteCommand failed to raise a '
+                            'CommandNotFound error when the command '
+                            'to be deleted is not supported.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_deleteCommandRemove(self, mockedClient, mockedCmdSet):
+        """
+        The deleteCommand must call the command set remove method.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        commandName = 'supported command'
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        device.deleteCommand(commandName)
+        self.mockedCmdSet.remove.assert_called_once_with(commandName)
