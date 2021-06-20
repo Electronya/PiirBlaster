@@ -42,6 +42,8 @@ class TestDevice(TestCase):
             }
         }
 
+        self.baseTopic = f"{self.deviceConfig['topicPrefix']}/{self.deviceConfig['location']}/{self.deviceConfig['name']}/"     # noqa: E501
+
         self.mockedAppConfig = Mock(spec_set=Config)
         self.mockedAppConfig.getUserName.return_value = 'username'
         self.mockedAppConfig.getUserPassword.return_value = 'password'
@@ -162,7 +164,7 @@ class TestDevice(TestCase):
         mockedCmdSet.side_effect = [self.mockedCmdSet]
         device = Device(logging, self.mockedAppConfig,
                         self.deviceConfig)
-        willTopic = f"{self.deviceConfig['topicPrefix']}/{self.deviceConfig['location']}/{self.deviceConfig['name']}/{device.STATUS_TOPIC}"     # noqa: E501
+        willTopic = f"{self.baseTopic}{device.STATUS_TOPIC}"
         qos = self.deviceConfig['lastWill']['qos']
         retain = self.deviceConfig['lastWill']['retain']
         self.mockedClient.will_set.assert_called_once_with(willTopic,
@@ -199,3 +201,33 @@ class TestDevice(TestCase):
         hostname = self.mockedAppConfig.getBrokerHostname()
         port = self.mockedAppConfig.getBrokerPort()
         self.mockedClient.connect.assert_called_once_with(hostname, port=port)
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__publishCmdResultSuccess(self, mockedClient, mockedCmdSet):
+        """
+        The _publishCmdResult method must publish the success message
+        when the success flag is true.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig)
+        device._publishCmdResult(True)
+        topic = f"{self.baseTopic}{device.RESULT_TOPIC}"
+        self.mockedClient.publish.assert_called_once_with(topic, payload=device.SUCCESS_MSG)    # noqa: E501
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test__publishCmdResultError(self, mockedClient, mockedCmdSet):
+        """
+        The _publishCmdResult method must publish the error message
+        when the success flag is false.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig)
+        device._publishCmdResult(False)
+        topic = f"{self.baseTopic}{device.RESULT_TOPIC}"
+        self.mockedClient.publish.assert_called_once_with(topic, payload=device.ERROR_MSG)    # noqa: E501
