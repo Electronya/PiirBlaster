@@ -22,7 +22,7 @@ class TestDevMngr(TestCase):
         """
         Test cases setup.
         """
-        with open('./tests/device/devices.json') as devFiles:
+        with open('./tests/unit/device/devices.json') as devFiles:
             self.devicesStr = devFiles.read()
             self.devices = json.loads(self.devicesStr)
 
