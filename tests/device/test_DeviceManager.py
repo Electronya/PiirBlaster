@@ -8,6 +8,7 @@ import os
 import sys
 sys.path.append(os.path.abspath('./src'))
 
+from device.Device import Device                            # noqa: E402
 from device.DeviceManager import DeviceManager              # noqa: E402
 from exceptions import DeviceFileAccess, DeviceNotFound, \
     DeviceExists                                            # noqa: E402
@@ -27,9 +28,7 @@ class TestDevMngr(TestCase):
 
         self.mockDevs = []
         for device in self.devices:
-            mockedDev = Mock()
-            mockedDev.loop_start.return_value = None
-            mockedDev.loop_start.return_value = None
+            mockedDev = Mock(spec_set=Device)
             mockedDev.getName.return_value = device['name']
             mockedDev.getLocation.return_value = device['location']
             mockedDev.getConfig.return_value = device
@@ -100,16 +99,31 @@ class TestDevMngr(TestCase):
     @patch('device.DeviceManager.Device')
     def test_startLoops(self, mockedDevice):
         """
-        The startLoops method must call the loopt_start method of each devices.
+        The startLoops method must call the startLoop method of each devices.
         """
         mockedDevice.side_effect = self.mockDevs
         with patch('builtins.open', mock_open(read_data=self.devicesStr)):
             devMngr = DeviceManager(logging, {})
             devMngr.startLoops()
             for dev in self.mockDevs:
-                self.assertTrue(dev.loop_start.called,
+                self.assertTrue(dev.startLoop.called,
                                 'DeviceManager startLoops method failed to '
-                                'call the loop_start method on all '
+                                'call the startLoop method on all '
+                                'the devices.')
+
+    @patch('device.DeviceManager.Device')
+    def test_stopLoops(self, mockedDevice):
+        """
+        The stopLoops method must call the stopLoop method of each devices.
+        """
+        mockedDevice.side_effect = self.mockDevs
+        with patch('builtins.open', mock_open(read_data=self.devicesStr)):
+            devMngr = DeviceManager(logging, {})
+            devMngr.stopLoops()
+            for dev in self.mockDevs:
+                self.assertTrue(dev.stopLoop.called,
+                                'DeviceManager startLoops method failed to '
+                                'call the stopLoop method on all '
                                 'the devices.')
 
     @patch('device.DeviceManager.Device')
@@ -248,7 +262,7 @@ class TestDevMngr(TestCase):
             'commandSet': {
                 'model': 'testModel4',
                 'manufacturer': 'testManufacturer4',
-                'Description': 'My test device 4',
+                'description': 'My test device 4',
                 'emitterGpio': 3,
                 'receiverGpio': 6,
                 'packetGap': 0.04

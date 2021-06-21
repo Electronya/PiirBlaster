@@ -68,7 +68,7 @@ class DeviceManager:
         for device in self.devices:
             self.logger.debug(f"{device.getLocation()}.{device.getName()}: "
                               f"starting loop")
-            device.loop_start()
+            device.startLoop()
 
     def stopLoops(self):
         """
@@ -78,7 +78,7 @@ class DeviceManager:
         for device in self.devices:
             self.logger.debug(f"{device.getLocation()}.{device.getName()}: "
                               f"stopping loop")
-            device.disconnect()
+            device.stopLoop()
 
     def getDefaultConfig(self):
         """
