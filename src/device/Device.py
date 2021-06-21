@@ -5,6 +5,7 @@ import os
 
 from exceptions import CommandNotFound, \
     CommandFileAccess
+import exceptions
 
 
 class Device():
@@ -46,8 +47,12 @@ class Device():
             self.logger.info('Loading existing device')
             manufacturer = self.config['commandSet']['manufacturer']
             model = self.config['commandSet']['model']
-            self.commandSet = CommandSet.load(os.path.join('./commandSets',
-                                              manufacturer, f"{model}.json"))
+            try:
+                self.commandSet = CommandSet.load(os.path.join('./commandSets',
+                                                  manufacturer, f"{model}."
+                                                  f"json"))
+            except Exception:
+                raise CommandFileAccess('unable to access the command file.')
 
         self.baseTopic = f"{self.config['topicPrefix']}/{self.config['location']}/{self.config['name']}/"   # noqa: E501
 

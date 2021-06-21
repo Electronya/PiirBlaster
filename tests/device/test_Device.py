@@ -75,6 +75,24 @@ class TestDevice(TestCase):
 
     @patch('device.Device.CommandSet.load')
     @patch('device.Device.mqtt.Client')
+    def test_constructorLoadFailed(self, mockedClient, mockedCmdSetLoad):
+        """
+        The constructor must raise a CommandFileAccess when the load
+        command set operation fail while creating an existing device.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSetLoad.side_effect = Exception()
+        with self.assertRaises(CommandFileAccess) as context:
+            device = Device(logging, self.mockedAppConfig,      # noqa: F841
+                            self.deviceConfig)
+            self.assertTrue('unable to access the command file.'
+                            in str(context.exception),
+                            'Device constructor failed to raise a '
+                            'CommandFileAccess error when the command '
+                            'set load operation failed.')
+
+    @patch('device.Device.CommandSet.load')
+    @patch('device.Device.mqtt.Client')
     def test_constructorLoadDevice(self, mockedClient, mockedCmdSetLoad):
         """
         The constructor must load an existing command set when the

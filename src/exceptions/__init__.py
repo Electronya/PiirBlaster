@@ -51,6 +51,7 @@ class CommandNotFound(Exception):
         """
         super().__init__(f"command {command} not supported.")
 
+
 class CommandFileAccess(Exception):
     """
     Exception raised when access to the command set fail.
