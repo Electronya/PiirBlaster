@@ -1,6 +1,6 @@
 # Dev dependencies
 pytest==6.2.2
-coverage==5.4
+pytest-cov==2.12.1
 rope==0.18.0
 flake8==3.9.2
 
