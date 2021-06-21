@@ -1,13 +1,13 @@
 class DeviceFileAccess(Exception):
     """
-    Exception raise when access to the device file generate errors.
+    Exception raised when access to the device file generate errors.
     """
     pass
 
 
 class DeviceNotFound(Exception):
     """
-    Exception raise when no device corresponding to the search
+    Exception raised when no device corresponding to the search
     critera was found.
     """
     def __init__(self, name, location):
@@ -23,7 +23,7 @@ class DeviceNotFound(Exception):
 
 class DeviceExists(Exception):
     """
-    Exception raised when trying to add a device with the same location and
+    Exception raisedd when trying to add a device with the same location and
     name than one that is already active.
     """
     def __init__(self, name, location):
@@ -39,7 +39,7 @@ class DeviceExists(Exception):
 
 class CommandNotFound(Exception):
     """
-    Exception raise when no command corresponding to the seach
+    Exception raised when no command corresponding to the seach
     was found.
     """
     def __init__(self, command):
@@ -50,3 +50,9 @@ class CommandNotFound(Exception):
             command:    The name of the command that was not found.
         """
         super().__init__(f"command {command} not supported.")
+
+class CommandFileAccess(Exception):
+    """
+    Exception raised when access to the command set fail.
+    """
+    pass

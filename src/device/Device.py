@@ -3,7 +3,8 @@ from ircodec.command import CommandSet
 
 import os
 
-from exceptions import CommandNotFound
+from exceptions import CommandNotFound, \
+    CommandFileAccess
 
 
 class Device():
@@ -294,14 +295,14 @@ class Device():
     def saveCommandSet(self):
         """
         Save the device command set.
-        TODO: exception
+
+        Raise:
+            CommandFileAccess if the save operation fail.
         """
-        result = {'result': 'failed'}
         try:
             self.commandSet.save_as(os.path.join('./commandSets',
                                     self.config['commandSet']['manufacturer'],
-                                    f"{self.config['commandSet']}.json"))
-            result['result'] = 'success'
-        except EnvironmentError:
-            result['message'] = 'Error accessing command set file'
-        return result
+                                    f"{self.config['commandSet']['model']}"
+                                    f".json"))
+        except Exception:
+            raise CommandFileAccess('unable to access the command file.')

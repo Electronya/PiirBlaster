@@ -1,5 +1,6 @@
 import logging
 from unittest import TestCase
+import unittest
 from unittest.mock import Mock, patch
 
 from ircodec.command import CommandSet
@@ -11,7 +12,7 @@ sys.path.append(os.path.abspath('./src'))
 
 from config import Config                                   # noqa: E402
 from device.Device import Device                            # noqa: E402
-from exceptions import CommandNotFound                      # noqa: E402
+from exceptions import CommandNotFound, CommandFileAccess   # noqa: E402
 
 
 class TestDevice(TestCase):
@@ -558,3 +559,40 @@ class TestDevice(TestCase):
                         self.deviceConfig, isNew=True)
         device.deleteCommand(commandName)
         self.mockedCmdSet.remove.assert_called_once_with(commandName)
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_saveCommandSetFailed(self, mockedClient, mockedCmdSet):
+        """
+        The saveCommand method must raise a CommandFileAccess error when
+        the save operation failed.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        self.mockedCmdSet.save_as.side_effect = Exception()
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        with self.assertRaises(CommandFileAccess) as context:
+            device.saveCommandSet()
+            self.assertTrue('unable to access the command file.'
+                            in context.exception,
+                            'Device saveCommandSet failed to raise a '
+                            'CommandFileAccess error when the save operation '
+                            'failed.')
+
+    @patch('device.Device.CommandSet')
+    @patch('device.Device.mqtt.Client')
+    def test_saveCommandSuccess(self, mockedClient, mockedCmdSet):
+        """
+        The saveCommand method must call the command set save_as method
+        with the appropriate file name.
+        """
+        mockedClient.side_effect = [self.mockedClient]
+        mockedCmdSet.side_effect = [self.mockedCmdSet]
+        device = Device(logging, self.mockedAppConfig,
+                        self.deviceConfig, isNew=True)
+        saveFile = os.path.join('./commandSets',
+                                self.deviceConfig['commandSet']['manufacturer'],        # noqa: E501
+                                f"{self.deviceConfig['commandSet']['model']}.json")     # noqa: E501
+        device.saveCommandSet()
+        self.mockedCmdSet.save_as.assert_called_once_with(saveFile)
