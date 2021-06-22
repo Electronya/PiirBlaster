@@ -77,3 +77,31 @@ class TestConfig(TestCase):
                                        f"{Config.MQTT_CONFIG_FILE}")
             mockedConf.assert_any_call(f"{Config.CONFIG_PATH}/"
                                        f"{Config.HW_CONFIG_FILE}")
+
+    def test_getBrokerHostname(self):
+        """
+        The getBrokerHostname must return the broker hostname/IP.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getBrokerHostname(),
+                             self.mqttConfig['broker']['hostname'])
+
+    def test_setBrokerHostname(self):
+        """
+        The setBrokerHostname must update the MQTT configuration with the
+        new hostname.
+        """
+        newHostname = 'new hostname'
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setBrokerHostname(newHostname)
+            self.assertEqual(appConfig.getBrokerHostname(), newHostname)
