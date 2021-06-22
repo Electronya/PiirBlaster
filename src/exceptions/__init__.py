@@ -57,3 +57,17 @@ class CommandFileAccess(Exception):
     Exception raised when access to the command set fail.
     """
     pass
+
+
+class MqttFileAccess(Exception):
+    """
+    Exception raise when access to the MQTT configuration file fail.
+    """
+    pass
+
+
+class HardwareFileAccess(Exception):
+    """
+    Exception raise when access to the Hardware configuration file fail.
+    """
+    pass

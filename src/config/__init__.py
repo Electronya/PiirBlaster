@@ -1,6 +1,8 @@
 import os
 import json
 
+from exceptions import HardwareFileAccess, MqttFileAccess
+
 
 class Config:
     CONFIG_PATH = './config/components'
@@ -26,15 +28,22 @@ class Config:
         """
         self.logger = logger.getLogger('CONFIG')
 
-        self.logger.info('Opening MQTT configuration')
-        with open(os.path.join(self.CONFIG_PATH,
-                  self.MQTT_CONFIG_FILE)) as mqttConfig:
-            self.mqttConfig = json.loads(mqttConfig.read())
+        try:
+            self.logger.info('Opening MQTT configuration')
+            with open(os.path.join(self.CONFIG_PATH,
+                      self.MQTT_CONFIG_FILE)) as mqttConfig:
+                self.mqttConfig = json.loads(mqttConfig.read())
+        except OSError:
+            raise MqttFileAccess('unable to access mqtt configuraion file')
 
-        self.logger.info('Opening hardware configuration')
-        with open(os.path.join(self.CONFIG_PATH,
-                  self.HW_CONFIG_FILE)) as hwConfig:
-            self.hwConfig = json.loads(hwConfig.read())
+        try:
+            self.logger.info('Opening hardware configuration')
+            with open(os.path.join(self.CONFIG_PATH,
+                      self.HW_CONFIG_FILE)) as hwConfig:
+                self.hwConfig = json.loads(hwConfig.read())
+        except OSError:
+            raise HardwareFileAccess('unable to access hardware '
+                                     'configuraion file')
 
     def getBrokerHostname(self):
         """
