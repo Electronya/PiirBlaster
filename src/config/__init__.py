@@ -12,47 +12,109 @@ class Config:
     SAVE_HW_CONFIG = 'Hardware configuration saved'
     ERR_SAVE_HW_CONFIG = 'Error accessing hardware configuration file!!'
 
-    # Constructor
     def __init__(self, logger):
+        """
+        Constructor.
+
+        Params:
+            logger:         The logger getter.
+
+        Raise:
+            MqttFileAccess if the access to the mqtt configuration file fail.
+            HardwareFileAccess if the access to the hardware configuration
+            file fail.
+        """
         self.logger = logger.getLogger('CONFIG')
 
-        # Reading MQTT config
         self.logger.info('Opening MQTT configuration')
         with open(os.path.join(self.CONFIG_PATH,
                   self.MQTT_CONFIG_FILE)) as mqttConfig:
             self.mqttConfig = json.loads(mqttConfig.read())
 
-        # Reading hardware config
         self.logger.info('Opening hardware configuration')
         with open(os.path.join(self.CONFIG_PATH,
                   self.HW_CONFIG_FILE)) as hwConfig:
             self.hwConfig = json.loads(hwConfig.read())
 
     def getBrokerHostname(self):
+        """
+        Get the broker hostname/IP
+
+        Return:
+            The broker hostname/IP.
+        """
         return self.mqttConfig['broker']['hostname']
 
-    def setBrokerHostname(self, newIp):
-        self.mqttConfig['broker']['hostname'] = newIp
+    def setBrokerHostname(self, hostname):
+        """
+        Set the broker hostname/IP.
+
+        Params:
+            hostname:       The new hostname/IP.
+        """
+        self.mqttConfig['broker']['hostname'] = hostname
 
     def getBrokerPort(self):
+        """
+        Get the broker port.
+
+        Return:
+            The broker port.
+        """
         return self.mqttConfig['broker']['port']
 
-    def setBrokerPort(self, newPort):
-        self.mqttConfig['broker']['port'] = newPort
+    def setBrokerPort(self, port):
+        """
+        Set the broker port.
+
+        Params:
+            port:       The new port.
+        """
+        self.mqttConfig['broker']['port'] = port
 
     def getUserName(self):
+        """
+        Get MQTT user name.
+
+        Return:
+            The MQTT user name.
+        """
         return self.mqttConfig['user']['name']
 
-    def setMqttUserName(self, newUserName):
-        self.mqttConfig['user']['name'] = newUserName
+    def setMqttUserName(self, userName):
+        """
+        Set the MQTT user name.
+
+        Params:
+            userName:       The new user name.
+        """
+        self.mqttConfig['user']['name'] = userName
 
     def getUserPassword(self):
+        """
+        Get the MQTT user password.
+
+        Return:
+            The MQTT user password.
+        """
         return self.mqttConfig['user']['password']
 
-    def setUserPassword(self, newPassword):
-        self.mqttConfig['user']['password'] = newPassword
+    def setUserPassword(self, password):
+        """
+        Set the MQTT user password.
+
+        Params:
+            password:       The new MQTT user password.
+        """
+        self.mqttConfig['user']['password'] = password
 
     def saveMqttConfig(self):
+        """
+        Save the MQTT configuration.
+
+        Raise:
+            MqttFileAccess if the access to the MQTT configuration file fails.
+        """
         self.logger.info('Saving MQTT configuration')
         result = {'result': 'failed'}
         try:
@@ -68,32 +130,97 @@ class Config:
         return result
 
     def getInputName(self):
+        """
+        Get the PiirBlaster input name.
+
+        Return:
+            The PiirBlaster input name.
+        """
         return self.hwConfig['in']['name']
 
     def getInputGpioId(self):
+        """
+        Get the Raspberry Pi input ID.
+
+        Return:
+            The Raspberry Pi input ID.
+        """
         return self.hwConfig['in']['gpioId']
 
-    def setInputGpioId(self, newGpioId):
-        self.hwConfig['in']['gpioId'] = newGpioId
+    def setInputGpioId(self, gpioId):
+        """
+        Set the Raspberry Pi input ID.
+
+        Params:
+            gpioId:     The new Raspberry Pi input ID.
+        """
+        self.hwConfig['in']['gpioId'] = gpioId
 
     def getOutputCount(self):
+        """
+        Get the output channel count.
+
+        Return:
+            The output channel count.
+        """
         return len(self.hwConfig['out'])
 
     def getOuputName(self, ouputIdx):
+        """
+        Get the PiirBlaster output name.
+
+        Params:
+            outputIdx:      The index of the output channel.
+
+        Return:
+            The PiirBlaster output name.
+
+        Raise:
+            IndexError if the outputIdx is out of range.
+        """
         if ouputIdx < len(self.hwConfig['out']):
             return self.hwConfig['out'][ouputIdx]['name']
         return None
 
     def getOuputGpioId(self, ouputIdx):
+        """
+        Get the Raspberry Pi output ID.
+
+        Params:
+            outputIdx:      The index of the output channel.
+
+        Return:
+            The Raspberry Pi output ID.
+
+        Raise:
+            IndexError if the outputIdx is out of range.
+        """
         if ouputIdx < len(self.hwConfig['out']):
             return self.hwConfig['out'][ouputIdx]['gpioId']
         return None
 
     def setOutputGpioId(self, ouputIdx, newGpioId):
+        """
+        Set the Raspberry Pi output ID.
+
+        Params:
+            outputIdx:       The index of the output channel.
+            gpioId:          The new Raspberry Pi output ID.
+
+        Raise:
+            IndexError if the outputIdx is out of range.
+        """
         if ouputIdx < len(self.hwConfig['out']):
             self.hwConfig['out'][ouputIdx]['gpioId'] = newGpioId
 
     def saveHwConfig(self):
+        """
+        Save the hardware configuration.
+
+        Raise:
+            HardwareFileAccess if the access to the hardware configuration
+            file fail.
+        """
         self.logger.info('Saving hardware configuration')
         result = {'result': 'failed'}
         try:
