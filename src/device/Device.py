@@ -1,3 +1,4 @@
+from logging import Logger
 import paho.mqtt.client as mqtt
 from ircodec.command import CommandSet
 
@@ -5,7 +6,6 @@ import os
 
 from exceptions import CommandNotFound, \
     CommandFileAccess
-import exceptions
 
 
 class Device():
@@ -160,7 +160,8 @@ class Device():
                 self.logger.debug(f"Sending packet #{i}")
                 gap = self.config['commandSet']['packetGap']
                 self.commandSet.emit(receivedMsg, emit_gap=gap)
-        except KeyError:
+        except KeyError as e:
+            self.logger.warning(str(e))
             reuslt = False
         self._publishCmdResult(reuslt)
 
