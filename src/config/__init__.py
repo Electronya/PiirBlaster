@@ -90,7 +90,7 @@ class Config:
         """
         return self.mqttConfig['user']['name']
 
-    def setMqttUserName(self, userName):
+    def setUserName(self, userName):
         """
         Set the MQTT user name.
 

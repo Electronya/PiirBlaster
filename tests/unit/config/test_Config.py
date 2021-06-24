@@ -105,3 +105,87 @@ class TestConfig(TestCase):
             appConfig = Config(logging)
             appConfig.setBrokerHostname(newHostname)
             self.assertEqual(appConfig.getBrokerHostname(), newHostname)
+
+    def test_getBrokerPort(self):
+        """
+        The getBrokerPort must return the broker port.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getBrokerPort(),
+                             self.mqttConfig['broker']['port'])
+
+    def test_setBrokerPort(self):
+        """
+        The setBrokerPort must update the MQTT configuration with the
+        new port.
+        """
+        newPort = 'new port'
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setBrokerPort(newPort)
+            self.assertEqual(appConfig.getBrokerPort(), newPort)
+
+    def test_getUserName(self):
+        """
+        The getUserName must return the MQTT user name.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getUserName(),
+                             self.mqttConfig['user']['name'])
+
+    def test_setUserName(self):
+        """
+        The setUserName must update the MQTT configuration with the
+        new user name.
+        """
+        newUserName = 'new user'
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setUserName(newUserName)
+            self.assertEqual(appConfig.getUserName(), newUserName)
+
+    def test_getUserPassword(self):
+        """
+        The getUserPassword must return the MQTT user password.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getUserPassword(),
+                             self.mqttConfig['user']['password'])
+
+    def test_setUserPassword(self):
+        """
+        The setUserPassword must update the MQTT configuration with the
+        new user password.
+        """
+        newUserPassword = 'new password'
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setUserPassword(newUserPassword)
+            self.assertEqual(appConfig.getUserPassword(), newUserPassword)
