@@ -1,6 +1,5 @@
 import logging
 from unittest import TestCase
-import unittest
 from unittest.mock import Mock, patch
 
 from ircodec.command import CommandSet
