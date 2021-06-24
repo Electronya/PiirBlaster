@@ -117,6 +117,24 @@ class Config:
         """
         self.mqttConfig['user']['password'] = password
 
+    def getMqttConfig(self):
+        """
+        Get the full MQTT configuration.
+
+        Return:
+            The full MQTT configuration.
+        """
+        return self.mqttConfig
+
+    def setMqttConfig(self, config):
+        """
+        Set the full MQTT configuration.
+
+        Params:
+            config:         The new MQTT configuration.
+        """
+        self.mqttConfig = config
+
     def saveMqttConfig(self):
         """
         Save the MQTT configuration.

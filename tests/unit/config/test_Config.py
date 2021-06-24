@@ -6,7 +6,6 @@ from unittest.mock import call, Mock, mock_open, patch
 import os
 import sys
 
-import config
 sys.path.append(os.path.abspath('./src'))
 
 from config import Config                               # noqa: E402
@@ -189,3 +188,34 @@ class TestConfig(TestCase):
             appConfig = Config(logging)
             appConfig.setUserPassword(newUserPassword)
             self.assertEqual(appConfig.getUserPassword(), newUserPassword)
+
+    def test_getMqttConfig(self):
+        """
+        The getMqttConfig must return the MQTT configuration.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getMqttConfig(), self.mqttConfig)
+
+    def test_setMqttConfig(self):
+        """
+        The setUserPassword must update the MQTT configuration with the
+        full new configuration.
+        """
+        newConfig = self.mqttConfig.copy()
+        newConfig['broker']['hostname'] = 'new hostname'
+        newConfig['broker']['port'] = 'new port'
+        newConfig['user']['name'] = 'new username'
+        newConfig['user']['password'] = 'new password'
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setMqttConfig(newConfig)
+            self.assertEqual(appConfig.getMqttConfig(), newConfig)
