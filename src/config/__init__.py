@@ -257,15 +257,13 @@ class Config:
             file fail.
         """
         self.logger.info('Saving hardware configuration')
-        result = {'result': 'failed'}
         try:
             with open(os.path.join(self.CONFIG_PATH,
                       self.HW_CONFIG_FILE)) as configFile:
                 newContent = json.dumps(self.hwConfig, sort_keys=True,
                                         indent=2)
                 configFile.write(newContent)
-            result['result'] = self.SAVE_HW_CONFIG
-        except EnvironmentError:
-            result['message'] = self.ERR_SAVE_HW_CONFIG
-            self.logger.error(f"{result['message']}")
-        return result
+        except OSError as e:
+            self.logger.error(str(e))
+            raise HardwareFileAccess('unable to access hardware '
+                                     'configuraion file')

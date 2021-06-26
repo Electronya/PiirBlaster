@@ -273,7 +273,7 @@ class TestConfig(TestCase):
                 [mockedConf.return_value,
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
-        newMqttConfig = self.mqttConfig
+        newMqttConfig = self.mqttConfig.copy()
         newMqttConfig['broker']['hostname'] = 'new host'
         newMqttConfig['user']['name'] = 'new user'
         newMqttConfig['user']['password'] = 'new password'
@@ -513,3 +513,53 @@ class TestConfig(TestCase):
             self.assertEqual(appConfig.getHwConfig(), newConfig,
                              'Config sethardwareConfig failed to '
                              'update the current hardware configuration.')
+
+    def test_saveHwConfigFail(self):
+        """
+        The saveHwConfig method must raise an HardwareFileAccess when the write
+        operation fails.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedMqttConf:
+            mockedMqttConf.side_effect = OSError
+            with self.assertRaises(HardwareFileAccess) as context:
+                appConfig.saveHwConfig()
+                self.assertTrue('unable to access hardware configuraion file'
+                                in str(context.exception),
+                                'Config saveHwconfig failed to raise a '
+                                'HardwareFileAccess exception when access to '
+                                'the Hw configuration access failed.')
+
+    def test_saveHwConfigWriting(self):
+        """
+        The saveHwConfig method must write the current active configuration
+        to the hardware configuration file.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        newConfig = self.hardConfig.copy()
+        newConfig['in']['gpioId'] = 12
+        newConfig['out'][2]['gpioId'] = 13
+        newConfig['out'][3]['gpioId'] = 14
+        newConfig['out'][5]['gpioId'] = 22
+        appConfig.setHwConfig(newConfig)
+        with patch('builtins.open', mock_open(read_data=self.hardConfStr)) \
+                as mockedHwConfig:
+            appConfig.saveHwConfig()
+            mockedHwConfig \
+                .assert_called_once_with(os.path.join(appConfig.CONFIG_PATH,
+                                                      appConfig.HW_CONFIG_FILE))    # noqa: E501
+            mockedHwConfig() \
+                .write.assert_called_once_with(json.dumps(newConfig,
+                                                          sort_keys=True,
+                                                          indent=2))
