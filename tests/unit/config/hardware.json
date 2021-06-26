@@ -1,0 +1,32 @@
+  {
+  "out": [
+    {
+      "name": "OUT0",
+      "gpioId": 4
+    },
+    {
+      "name": "OUT1",
+      "gpioId": 17
+    },
+    {
+      "name": "OUT2",
+      "gpioId": 27
+    },
+    {
+      "name": "OUT3",
+      "gpioId": 22
+    },
+    {
+      "name": "OUT4",
+      "gpioId": 10
+    },
+    {
+      "name": "OUT5",
+      "gpioId": 9
+    }
+  ],
+  "in": {
+    "name": "IN0",
+    "gpioId": 11
+  }
+}
