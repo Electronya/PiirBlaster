@@ -88,7 +88,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             self.assertEqual(appConfig.getBrokerHostname(),
-                             self.mqttConfig['broker']['hostname'])
+                             self.mqttConfig['broker']['hostname'],
+                             'Config getBrokerHostname failed to '
+                             'return the current broker hostname.')
 
     def test_setBrokerHostname(self):
         """
@@ -103,7 +105,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             appConfig.setBrokerHostname(newHostname)
-            self.assertEqual(appConfig.getBrokerHostname(), newHostname)
+            self.assertEqual(appConfig.getBrokerHostname(), newHostname,
+                             'Config setBrokerHostname failed to '
+                             'update the current broker hostname.')
 
     def test_getBrokerPort(self):
         """
@@ -116,7 +120,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             self.assertEqual(appConfig.getBrokerPort(),
-                             self.mqttConfig['broker']['port'])
+                             self.mqttConfig['broker']['port'],
+                             'Config getBrokerPort failed to '
+                             'return the current broker port.')
 
     def test_setBrokerPort(self):
         """
@@ -131,7 +137,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             appConfig.setBrokerPort(newPort)
-            self.assertEqual(appConfig.getBrokerPort(), newPort)
+            self.assertEqual(appConfig.getBrokerPort(), newPort,
+                             'Config setBrokerPort failed to '
+                             'update the current broker port.')
 
     def test_getUserName(self):
         """
@@ -144,7 +152,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             self.assertEqual(appConfig.getUserName(),
-                             self.mqttConfig['user']['name'])
+                             self.mqttConfig['user']['name'],
+                             'Config getUserName failed to '
+                             'return the current user name.')
 
     def test_setUserName(self):
         """
@@ -159,7 +169,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             appConfig.setUserName(newUserName)
-            self.assertEqual(appConfig.getUserName(), newUserName)
+            self.assertEqual(appConfig.getUserName(), newUserName,
+                             'Config setUserName failed to '
+                             'update the current user name.')
 
     def test_getUserPassword(self):
         """
@@ -172,7 +184,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             self.assertEqual(appConfig.getUserPassword(),
-                             self.mqttConfig['user']['password'])
+                             self.mqttConfig['user']['password'],
+                             'Config getUserPassword failed to '
+                             'return the current user password.')
 
     def test_setUserPassword(self):
         """
@@ -187,7 +201,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             appConfig.setUserPassword(newUserPassword)
-            self.assertEqual(appConfig.getUserPassword(), newUserPassword)
+            self.assertEqual(appConfig.getUserPassword(), newUserPassword,
+                             'Config setUserPassword failed to '
+                             'update the current user password.')
 
     def test_getMqttConfig(self):
         """
@@ -199,7 +215,9 @@ class TestConfig(TestCase):
                 [mockedConf.return_value,
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
-            self.assertEqual(appConfig.getMqttConfig(), self.mqttConfig)
+            self.assertEqual(appConfig.getMqttConfig(), self.mqttConfig,
+                             'Config getMqttConfig failed to '
+                             'return the current MQTT configuration.')
 
     def test_setMqttConfig(self):
         """
@@ -218,7 +236,9 @@ class TestConfig(TestCase):
                  mock_open(read_data=self.hardConfStr).return_value]
             appConfig = Config(logging)
             appConfig.setMqttConfig(newConfig)
-            self.assertEqual(appConfig.getMqttConfig(), newConfig)
+            self.assertEqual(appConfig.getMqttConfig(), newConfig,
+                             'Config setMqttConfig failed to '
+                             'update the current MQTT configuration.')
 
     def test_saveMqttConfigFail(self):
         """
@@ -238,9 +258,9 @@ class TestConfig(TestCase):
                 appConfig.saveMqttConfig()
                 self.assertTrue('unable to access mqtt configuraion file'
                                 in str(context.exception),
-                                'Config failed to raise a MqttFileAccess '
-                                'exception when access to the MQTT '
-                                'configuration access failed.')
+                                'Config saveMqtt/config failed to raise a '
+                                'MqttFileAccess exception when access to '
+                                'the MQTT configuration access failed.')
 
     def test_saveMqttConfigWriting(self):
         """
@@ -268,3 +288,50 @@ class TestConfig(TestCase):
                 .write.assert_called_once_with(json.dumps(newMqttConfig,
                                                           sort_keys=True,
                                                           indent=2))
+
+    def test_getInputName(self):
+        """
+        The getInputName method must return the PiirBlaster input name.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getInputName(),
+                             self.hardConfig['in']['name'],
+                             'Config getInputName failed to return '
+                             'the PiirBlaster input name.')
+
+    def test_getInputGpioId(self):
+        """
+        The getInputGpioId method must return the Raspberry Pi input ID.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getInputGpioId(),
+                             self.hardConfig['in']['gpioId'],
+                             'Config getInputGpioId failed to return '
+                             'the current Raspberry Pi input ID.')
+
+    def test_setInputGpioId(self):
+        """
+        The setInputGpioId method must update the hardware configuration
+        with the new Raspberry Pi input ID.
+        """
+        newGpioId = 17
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setInputGpioId(newGpioId)
+            self.assertEqual(appConfig.getInputGpioId(), newGpioId,
+                             'Config setInputGpio failed to update '
+                             'the current Raspberry Pi input ID.')

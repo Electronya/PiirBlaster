@@ -173,6 +173,7 @@ class Config:
 
     def setInputGpioId(self, gpioId):
         """
+        TODO: validate input with the raspberry pi??.
         Set the Raspberry Pi input ID.
 
         Params:
