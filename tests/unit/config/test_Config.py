@@ -335,3 +335,146 @@ class TestConfig(TestCase):
             self.assertEqual(appConfig.getInputGpioId(), newGpioId,
                              'Config setInputGpio failed to update '
                              'the current Raspberry Pi input ID.')
+
+    def test_getOutputCount(self):
+        """
+        The getOutputCount method must return the total number
+        of usable output channel.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getOutputCount(),
+                             len(self.hardConfig['out']),
+                             'Config getOutputCount failed to return '
+                             'the number of usable output channel.')
+
+    def test_getOutputNameOutRange(self):
+        """
+        The getOutputName method must raise an IndexError exception if
+        the given index is out of range.
+        """
+        testIdxes = [6, 10, -7, -10]
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        for testIdx in testIdxes:
+            with self.assertRaises(IndexError) as context:
+                appConfig.getOutputName(testIdx)
+                self.assertTrue('list index out of range'
+                                in str(context.exception),
+                                'Config getOutputName failed to raise '
+                                'an IndexError if the given output index '
+                                'is out of range.')
+
+    def test_getOutputNameInRange(self):
+        """
+        The getOutputName method must return the PiirBlaster
+        output name of the output at the given index. If the given
+        index is within range.
+        """
+        testIdxes = [0, 5, -1, -6, 3, -2]
+        expectedNames = ['OUT0', 'OUT5', 'OUT5', 'OUT0', 'OUT3', 'OUT4']
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        for idx in range(len(testIdxes)):
+            self.assertEqual(appConfig.getOutputName(testIdxes[idx]),
+                             expectedNames[idx],
+                             'Config getOutputName failed to return '
+                             'the PiirBlaster name of the output at '
+                             'the given index.')
+
+    def test_getOutputGpioIdOutRange(self):
+        """
+        The getOutputGpioId method must raise an IndexError exception if
+        the given index is out of range.
+        """
+        testIdxes = [6, 10, -7, -10]
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        for testIdx in testIdxes:
+            with self.assertRaises(IndexError) as context:
+                appConfig.getOutputGpioId(testIdx)
+                self.assertTrue('list index out of range'
+                                in str(context.exception),
+                                'Config getOutputGpioId failed to raise '
+                                'an IndexError if the given output index '
+                                'is out of range.')
+
+    def test_getOutputGpioIdInRange(self):
+        """
+        The getOutputGpioId method must return the Raspberry Pi
+        gpio ID of the output at the given index. If the given
+        index is within range.
+        """
+        testIdxes = [0, 5, -1, -6, 3, -2]
+        expectedNames = [4, 9, 9, 4, 22, 10]
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        for idx in range(len(testIdxes)):
+            self.assertEqual(appConfig.getOutputGpioId(testIdxes[idx]),
+                             expectedNames[idx],
+                             'Config getOutputGpioId failed to return '
+                             'the Raspberry Pi gpio ID of the output at '
+                             'the given index.')
+
+    def test_setOutputGpioIdOutRange(self):
+        """
+        The setOutputGpioId method must raise an IndexError exception if
+        the given index is out of range.
+        """
+        testIdxes = [6, 10, -7, -10]
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        for testIdx in testIdxes:
+            with self.assertRaises(IndexError) as context:
+                appConfig.setOutputGpioId(testIdx, 10)
+                self.assertTrue('list index out of range'
+                                in str(context.exception),
+                                'Config getOutputGpioId failed to raise '
+                                'an IndexError if the given output index '
+                                'is out of range.')
+
+    def test_setOutputGpioIdInRange(self):
+        """
+        The setOutputGpioId method must update the Raspberry Pi
+        gpio ID of the output at the given index. If the given
+        index is within range.
+        """
+        testIdxes = [0, 5, -1, -6, 3, -2]
+        expectedIds = [12, 10, 11, 3, 14, 6]
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        for idx in range(len(testIdxes)):
+            appConfig.setOutputGpioId(testIdxes[idx], expectedIds[idx])
+            self.assertEqual(appConfig.getOutputGpioId(testIdxes[idx]),
+                             expectedIds[idx],
+                             'Config setOutputGpioId failed to update '
+                             'the Raspberry Pi gpio ID of the output at '
+                             'the given index.')

@@ -190,7 +190,7 @@ class Config:
         """
         return len(self.hwConfig['out'])
 
-    def getOuputName(self, ouputIdx):
+    def getOutputName(self, ouputIdx):
         """
         Get the PiirBlaster output name.
 
@@ -203,11 +203,9 @@ class Config:
         Raise:
             IndexError if the outputIdx is out of range.
         """
-        if ouputIdx < len(self.hwConfig['out']):
-            return self.hwConfig['out'][ouputIdx]['name']
-        return None
+        return self.hwConfig['out'][ouputIdx]['name']
 
-    def getOuputGpioId(self, ouputIdx):
+    def getOutputGpioId(self, ouputIdx):
         """
         Get the Raspberry Pi output ID.
 
@@ -220,12 +218,11 @@ class Config:
         Raise:
             IndexError if the outputIdx is out of range.
         """
-        if ouputIdx < len(self.hwConfig['out']):
-            return self.hwConfig['out'][ouputIdx]['gpioId']
-        return None
+        return self.hwConfig['out'][ouputIdx]['gpioId']
 
     def setOutputGpioId(self, ouputIdx, newGpioId):
         """
+        TODO: validate input with the raspberry pi??.
         Set the Raspberry Pi output ID.
 
         Params:
@@ -235,8 +232,7 @@ class Config:
         Raise:
             IndexError if the outputIdx is out of range.
         """
-        if ouputIdx < len(self.hwConfig['out']):
-            self.hwConfig['out'][ouputIdx]['gpioId'] = newGpioId
+        self.hwConfig['out'][ouputIdx]['gpioId'] = newGpioId
 
     def saveHwConfig(self):
         """
