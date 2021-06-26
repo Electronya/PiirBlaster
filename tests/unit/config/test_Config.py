@@ -221,7 +221,7 @@ class TestConfig(TestCase):
 
     def test_setMqttConfig(self):
         """
-        The setUserPassword must update the MQTT configuration with the
+        The setMqttConfig must update the MQTT configuration with the
         full new configuration.
         """
         newConfig = self.mqttConfig.copy()
@@ -478,3 +478,38 @@ class TestConfig(TestCase):
                              'Config setOutputGpioId failed to update '
                              'the Raspberry Pi gpio ID of the output at '
                              'the given index.')
+
+    def test_getHwConfig(self):
+        """
+        The getHwConfig must return the hardware configuration.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            self.assertEqual(appConfig.getHwConfig(), self.hardConfig,
+                             'Config getHwConfig failed to '
+                             'return the current hardware configuration.')
+
+    def test_setHwConfig(self):
+        """
+        The setHwConfig must update the hardware configuration with the
+        full new configuration.
+        """
+        newConfig = self.hardConfig.copy()
+        newConfig['in']['gpioId'] = 12
+        newConfig['out'][2]['gpioId'] = 13
+        newConfig['out'][3]['gpioId'] = 14
+        newConfig['out'][5]['gpioId'] = 22
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+            appConfig.setHwConfig(newConfig)
+            self.assertEqual(appConfig.getHwConfig(), newConfig,
+                             'Config sethardwareConfig failed to '
+                             'update the current hardware configuration.')

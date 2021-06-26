@@ -128,6 +128,7 @@ class Config:
 
     def setMqttConfig(self, config):
         """
+        TODO: validate struct??
         Set the full MQTT configuration.
 
         Params:
@@ -233,6 +234,19 @@ class Config:
             IndexError if the outputIdx is out of range.
         """
         self.hwConfig['out'][ouputIdx]['gpioId'] = newGpioId
+
+    def getHwConfig(self):
+        """
+        Get the full hardware configuration.
+        """
+        return self.hwConfig
+
+    def setHwConfig(self, newConfig):
+        """
+        TODO: validate struct??
+        Set the full hardware configuration.
+        """
+        self.hwConfig = newConfig
 
     def saveHwConfig(self):
         """
