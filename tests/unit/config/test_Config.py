@@ -1,7 +1,7 @@
 import json
 import logging
 from unittest import TestCase
-from unittest.mock import call, Mock, mock_open, patch
+from unittest.mock import mock_open, patch
 
 import os
 import sys
