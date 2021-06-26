@@ -143,18 +143,15 @@ class Config:
             MqttFileAccess if the access to the MQTT configuration file fails.
         """
         self.logger.info('Saving MQTT configuration')
-        result = {'result': 'failed'}
         try:
             with open(os.path.join(self.CONFIG_PATH,
                       self.MQTT_CONFIG_FILE)) as configFile:
                 newContent = json.dumps(self.mqttConfig, sort_keys=True,
                                         indent=2)
                 configFile.write(newContent)
-            result['result'] = self.SAVE_MQTT_CONFIG
-        except EnvironmentError:
-            result['message'] = self.ERR_SAVE_MQTT_CONFIG
-            self.logger.error(f"{result['message']}")
-        return result
+        except OSError as e:
+            self.logger.error(str(e))
+            raise MqttFileAccess()
 
     def getInputName(self):
         """

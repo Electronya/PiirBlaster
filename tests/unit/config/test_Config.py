@@ -219,3 +219,52 @@ class TestConfig(TestCase):
             appConfig = Config(logging)
             appConfig.setMqttConfig(newConfig)
             self.assertEqual(appConfig.getMqttConfig(), newConfig)
+
+    def test_saveMqttConfigFail(self):
+        """
+        The saveMqttConfig method must raise an MqttFileAccess when the write
+        operation fails.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedMqttConf:
+            mockedMqttConf.side_effect = OSError
+            with self.assertRaises(MqttFileAccess) as context:
+                appConfig.saveMqttConfig()
+                self.assertTrue('unable to access mqtt configuraion file'
+                                in str(context.exception),
+                                'Config failed to raise a MqttFileAccess '
+                                'exception when access to the MQTT '
+                                'configuration access failed.')
+
+    def test_saveMqttConfigWriting(self):
+        """
+        The saveMqttConfig method must write the current active configuration
+        to the MQTT configuration file.
+        """
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedConf:
+            mockedConf.side_effect = \
+                [mockedConf.return_value,
+                 mock_open(read_data=self.hardConfStr).return_value]
+            appConfig = Config(logging)
+        newMqttConfig = self.mqttConfig
+        newMqttConfig['broker']['hostname'] = 'new host'
+        newMqttConfig['user']['name'] = 'new user'
+        newMqttConfig['user']['password'] = 'new password'
+        appConfig.setMqttConfig(newMqttConfig)
+        with patch('builtins.open', mock_open(read_data=self.mqttConfStr)) \
+                as mockedMqttConfig:
+            appConfig.saveMqttConfig()
+            mockedMqttConfig \
+                .assert_called_once_with(os.path.join(appConfig.CONFIG_PATH,
+                                                      appConfig.MQTT_CONFIG_FILE))      # noqa: E501
+            mockedMqttConfig() \
+                .write.assert_called_once_with(json.dumps(newMqttConfig,
+                                                          sort_keys=True,
+                                                          indent=2))
