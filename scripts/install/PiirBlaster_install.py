@@ -139,8 +139,8 @@ def clonePiirBlaster():
 def getMqttConfig():
     print(f"{Text.HEADER}*** GATTERING MQTT CONFIGURATION INFO ***{Text.ENDC}")
     os.chdir('PiirBlaster')
-    with open('config/app/mqtt.json') as mqttConfigFile:
-        mqttConfig = json.load(mqttConfigFile.read())
+    with open('config/components/mqtt.json', 'r+') as mqttConfigFile:
+        mqttConfig = json.loads(mqttConfigFile.read())
         mqttConfig['broker']['hostname'] = input('Please enter the hostname/ip of the broker: ')
         mqttConfig['broker']['port'] = int(input(f"Please enter the broker port [{mqttConfig['broker']['port']}]: ") or mqttConfig['broker']['port'])
         mqttConfig['user']['name'] = input('Please enter the service username: ')
