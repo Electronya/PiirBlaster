@@ -1,5 +1,5 @@
 # Dev dependencies
-pytest==6.2.2
+pytest==9.0.3
 pytest-cov==2.12.1
 rope==0.18.0
 flake8==3.9.2
